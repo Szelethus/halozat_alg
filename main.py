@@ -9,6 +9,12 @@ from Node import Node, Port
 from pprint import pprint
 from collections import defaultdict
 
+import plot
+import pygame
+import pylab
+from pygame.locals import *
+import time
+
 
 def get_bin(x, n=0):
     return format(x, 'b').zfill(n)
@@ -73,45 +79,75 @@ if oracle == 0:
 else:
     edges = nx.dfs_labeled_edges(minimum_spanning_tree(G), random.randint(1, G.number_of_nodes()))
 
-path = []
-node_path = []
-back_source = []
-ports = []
-visited_nodes = 0
-bit = math.ceil(math.log(G.number_of_nodes(), 2))
-print('bit:', bit)
-for u, v, d in edges:
-    found = False
-    if visited_nodes != G.number_of_nodes():
-        if d == "forward":
-            path.append(1)
-            node_path.append(v)
-            visited_nodes += 1
-            for nod in nodes:
-                k = 0
-                for por in nod.ports:
-                    if u == por.n1 and v == por.n2:
-                        ports.append(get_bin(k, bit))
-                        found = True
-                    k += 1
-                if found:
-                    break
-        elif d == 'reverse':
-            path.append(0)
-            node_path.append(u)
-            for nod in reversed(nodes):
-                k = 0
-                for por in nod.ports:
-                    if u == por.n1 and v == por.n2:
-                        ports.append(get_bin(k, bit))
-                        found = True
-                    k += 1
-                if found:
-                    break
-    elif d == 'reverse':
-        back_source.append(0)
+pygame.init()
+fig = pylab.figure(figsize=[7, 5], dpi=100)
+window = pygame.display.set_mode((700, 500), DOUBLEBUF)
+screen = pygame.display.get_surface()
+running = True
+while running:
+    # if the user wants to close the window after the algorithm is finished
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    path = []
+    node_path = []
+    back_source = []
+    ports = []
+    visited_nodes = 0
+    bit = math.ceil(math.log(G.number_of_nodes(), 2))
+    print('bit:', bit)
 
-print('Structure of the graph (1:forward, 0:reverse): ', path)
-print('Back to the source: ', back_source)
-print('DFS sequence of nodes: ', node_path)
-print('DFS sequence of ports: ', ports)
+    for u, v, d in edges:
+        # if the user wants to close the window during the algorithm is running
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        if running == False:
+            pygame.quit()
+
+        # color only the currently used edge
+        plot.clear_edge_colors(G)
+        found = False
+        if visited_nodes != G.number_of_nodes():
+            if d == "forward":
+                path.append(1)
+                node_path.append(v)
+                visited_nodes += 1
+                for nod in nodes:
+                    k = 0
+                    for por in nod.ports:
+                        if u == por.n1 and v == por.n2:
+                            next_edge = plot.find_next_edge(por)
+                            plot.color_forward_edge(G, next_edge)
+                            ports.append(get_bin(k, bit))
+                            found = True
+                        k += 1
+                    if found:
+                        break
+            elif d == 'reverse':
+                path.append(0)
+                node_path.append(u)
+                for nod in reversed(nodes):
+                    k = 0
+                    for por in nod.ports:
+                        if u == por.n1 and v == por.n2:
+                            next_edge = plot.find_next_edge(por)
+                            plot.color_reverse_edge(G, next_edge)
+                            ports.append(get_bin(k, bit))
+                            found = True
+                        k += 1
+                    if found:
+                        break
+        elif d == 'reverse':
+            back_source.append(0)
+            
+        time.sleep(1)
+
+        plot.draw_window(G, screen, fig)
+        pygame.display.flip()
+
+    print('Structure of the graph (1:forward, 0:reverse): ', path)
+    print('Back to the source: ', back_source)
+    print('DFS sequence of nodes: ', node_path)
+    print('DFS sequence of ports: ', ports)
+pygame.quit()
