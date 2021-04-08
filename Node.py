@@ -5,7 +5,7 @@ import math
 MAP_ORACLE = 0
 INSTANCE_ORACLE = 1
 
-def get_bin(x, n=0):
+def get_binary(x, n=0):
     return format(x, 'b').zfill(n)
 
 class Graph:
@@ -54,7 +54,14 @@ class Graph:
         self.verify_nodes_and_ports(node1, port1)
         self.verify_nodes_and_ports(node2, port2)
     
-        self.G.add_edge(node1, node2, p1=port1, p2=port2)
+        self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
+
+    def get_port_to(self, from_, to):
+        data = self.G.get_edge_data(from_, to)
+        if (data['n1'] == from_):
+            return data['p1']
+        else:
+            return data['p2']
 
     def encode(self, oracle_type, robot_pos):
         if oracle_type == INSTANCE_ORACLE:
@@ -71,17 +78,11 @@ class Graph:
                     self.path.append(1)
                     self.node_path.append(v)
                     visited_nodes += 1
-                    for edge in self.G.edges(v, data=True):
-                        if edge['n2'] == u:
-                            self.ports.append(get_bin(edge['p1'], bit))
-                            break;
+                    self.ports.append(get_binary(self.get_port_to(v, u), bit))
                 elif d == 'reverse':
                     self.path.append(0)
                     self.node_path.append(u)
-                    for edge in self.G.edges(u, data=True):
-                        if edge['n1'] == v:
-                            self.ports.append(get_bin(edge['p2'], bit))
-                            break;
+                    self.ports.append(get_binary(self.get_port_to(u, v), bit))
             elif d == 'reverse':
                 self.back_source.append(0)
 
