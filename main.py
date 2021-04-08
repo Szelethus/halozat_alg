@@ -12,22 +12,6 @@ from collections import defaultdict
 
 # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
 
-routers = [
-    dict( name  = 0, ports = [0, 1, 2] ),
-    dict( name  = 1, ports = [0] ),
-    dict( name  = 2, ports = [0, 1] ),
-    dict( name  = 3, ports = [0] ),
-    dict( name  = 4, ports = [0] )
-]
-
-G = nx.Graph()
-
-for r in routers:
-  # Add ports as attributes
-  G.add_node(r['name'], name=r['name'], ports=r['ports'])
-
-G.nodes().get('R3', None)
-
 # Sanity check to see if the nodes and ports are present in Graph
 def verify_nodes_and_ports(G, node, port):
     if G.nodes().get(node, None) is None:
@@ -46,13 +30,39 @@ def add_edge_port(G, node1, port1, node2, port2):
     verify_nodes_and_ports(G, node1, port1)
     verify_nodes_and_ports(G, node2, port2)
 
-    # Add the anchor points as edge attributes
     G.add_edge(node1, node2, p1=port1, p2=port2)
 
-add_edge_port(G, 0, 2, 0, 0)
-add_edge_port(G, 0, 0, 4, 0)
-add_edge_port(G, 0, 1, 2, 0)
-add_edge_port(G, 2, 1, 3, 0)
+def construct_graph(node_count, edges_with_ports):
+    G = nx.Graph()
+
+    # Initialize the graph with the nodes with only a single port.
+    # (the graph must be connected, so this this is okay, tho verification would
+    # be nice)
+    for i in range(0, node_count):
+        G.add_node(i, ports=[0])
+
+    # Count how many ports each of the nodes have by inspecting the edge list.
+    idx = 0
+    while idx < len(edges_with_ports):
+        current_edge_count = 0
+        current_node = edges_with_ports[idx]['n1']
+        while idx < len(edges_with_ports) and edges_with_ports[idx]['n1'] == current_node:
+            current_edge_count = current_edge_count + 1
+            idx = idx + 1
+            G.nodes(data=True)[current_node]['ports'].append(current_edge_count)
+
+    # Connect these ports with edges.
+    for e in edges_with_ports:
+        add_edge_port(G, e['n1'], e['p1'], e['n2'], e['p2'])
+
+    return G
+
+G = construct_graph(5, [
+    dict(n1=0, p1=2, n2=0, p2=0),
+    dict(n1=0, p1=0, n2=4, p2=0),
+    dict(n1=0, p1=1, n2=2, p2=0),
+    dict(n1=2, p1=1, n2=3, p2=0)
+])
 
 print(G.edges(0, data=True))
 #print(nx.get_edge_attributes(G, 'anchors'))
