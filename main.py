@@ -10,14 +10,15 @@ from pprint import pprint
 from collections import defaultdict
 
 
-def get_bin(x, n=0):
-    return format(x, 'b').zfill(n)
+# https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
 
-r1 = dict( name  = 'R1', ports = [0, 1] )
-r2 = dict( name  = 'R2', ports = [0, 1] )
-r3 = dict( name  = 'R3', ports = [0, 1] )
-
-routers = [r1,r2,r3]
+routers = [
+    dict( name  = 0, ports = [0, 1, 2] ),
+    dict( name  = 1, ports = [0] ),
+    dict( name  = 2, ports = [0, 1] ),
+    dict( name  = 3, ports = [0] ),
+    dict( name  = 4, ports = [0] )
+]
 
 G = nx.Graph()
 
@@ -27,30 +28,31 @@ for r in routers:
 
 G.nodes().get('R3', None)
 
+# Sanity check to see if the nodes and ports are present in Graph
+def verify_nodes_and_ports(G, node, port):
+    if G.nodes().get(node, None) is None:
+        print("Node : {} is not present in Graph".format(node))
+        return False
+
+    if G.nodes(data=True)[node]['ports'][port] is None:
+        print("Port ID :{} is incorrect for Node ID : {}!".
+              format(node, port))
+    return False
+
+    return True
+
+
 def add_edge_port(G, node1, port1, node2, port2):
-  node_list = [node1, node2]
-  port_list = [port1, port2]
+    verify_nodes_and_ports(G, node1, port1)
+    verify_nodes_and_ports(G, node2, port2)
 
-  edge_ports = []
+    # Add the anchor points as edge attributes
+    G.add_edge(node1, node2, p1=port1, p2=port2)
 
-  for idx in range(0, 2):
-    node_idx = node_list[idx]
-    port_idx = port_list[idx]
+add_edge_port(G, 0, 2, 0, 0)
+add_edge_port(G, 0, 0, 4, 0)
+add_edge_port(G, 0, 1, 2, 0)
+add_edge_port(G, 2, 1, 3, 0)
 
-    # Sanity check to see if the nodes and ports are present in Graph
-    if G.nodes().get(node_idx, None) is None:
-      print("Node : {} is not present in Graph".format(node_idx))
-      return
-
-    if G.nodes(data=True)[node_idx]['ports'][port_idx] is None:
-      print("Port ID :{} is incorrect for Node ID : {}!".
-            format(node_idx, port_idx))
-      return
-
-    edge_ports.append(node_idx + '.' + str(port_idx))
-
-  # Add the anchor points as edge attributes
-  G.add_edge(node1, node2, anchors=edge_ports)
-
-add_edge_port(G, 'R1', 1, 'R2', 0)
-print(nx.get_edge_attributes(G, 'anchors'))
+print(G.edges(0, data=True))
+#print(nx.get_edge_attributes(G, 'anchors'))
