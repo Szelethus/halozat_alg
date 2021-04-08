@@ -75,20 +75,13 @@ class TestSum(unittest.TestCase):
     #       0
     #        (2) 1----0 (3)
     def test_tiny_graph(self):
-        G = nx.Graph()
 
-        G.add_nodes_from([0, 1, 2, 3, 4])
-        G.add_edges_from([(0, 1), (0, 4), (0, 2),
-                          (2, 3)])
-        nodes = [
-            Node(0, [Port(1, 2), Port(4, 0), Port(2, 1)]),
-            Node(1, [Port(0, 0)]),
-            Node(2, [Port(0, 0), Port(3, 1)]),
-            Node(3, [Port(2, 0)]),
-            Node(4, [Port(0, 0)])
-        ]
-
-        NewGraph = Graph(G, nodes)
+        NewGraph = Graph(5, [
+            dict(n1=0, p1=2, n2=0, p2=0),
+            dict(n1=0, p1=0, n2=4, p2=0),
+            dict(n1=0, p1=1, n2=2, p2=0),
+            dict(n1=2, p1=1, n2=3, p2=0)
+        ])
         robot_pos = 0
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
         NewGraph.to_string()

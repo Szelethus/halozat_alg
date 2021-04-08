@@ -64,5 +64,5 @@ G = construct_graph(5, [
     dict(n1=2, p1=1, n2=3, p2=0)
 ])
 
+# List the edges connected to node 0:
 print(G.edges(0, data=True))
-#print(nx.get_edge_attributes(G, 'anchors'))

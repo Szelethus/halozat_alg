@@ -9,52 +9,79 @@ def get_bin(x, n=0):
     return format(x, 'b').zfill(n)
 
 class Graph:
-    def __init__(self, nx_graph, node_index):
-        self.nx_graph = nx_graph
-        self.node_index = node_index
+    def __init__(self, node_count, edges_with_ports):
         self.path = []
         self.node_path = []
         self.back_source = []
         self.ports = []
 
+        self.G = nx.Graph()
+    
+        # Initialize the graph with the nodes with only a single port.
+        # (the graph must be connected, so this this is okay, tho verification would
+        # be nice)
+        for i in range(0, node_count):
+            self.G.add_node(i, ports=[0])
+    
+        # Count how many ports each of the nodes have by inspecting the edge list.
+        idx = 0
+        while idx < len(edges_with_ports):
+            current_edge_count = 0
+            current_node = edges_with_ports[idx]['n1']
+            while idx < len(edges_with_ports) and edges_with_ports[idx]['n1'] == current_node:
+                current_edge_count = current_edge_count + 1
+                idx = idx + 1
+                self.G.nodes(data=True)[current_node]['ports'].append(current_edge_count)
+    
+        # Connect these ports with edges.
+        for e in edges_with_ports:
+            self.add_edge_port(e['n1'], e['p1'], e['n2'], e['p2'])
+    
+    def verify_nodes_and_ports(self, node, port):
+        if self.G.nodes().get(node, None) is None:
+            print("Node : {} is not present in Graph".format(node))
+            return False
+    
+        if self.G.nodes(data=True)[node]['ports'][port] is None:
+            print("Port ID :{} is incorrect for Node ID : {}!".
+                  format(node, port))
+        return False
+    
+        return True
+    
+    
+    def add_edge_port(self, node1, port1, node2, port2):
+        self.verify_nodes_and_ports(node1, port1)
+        self.verify_nodes_and_ports(node2, port2)
+    
+        self.G.add_edge(node1, node2, p1=port1, p2=port2)
+
     def encode(self, oracle_type, robot_pos):
         if oracle_type == INSTANCE_ORACLE:
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.nx_graph), robot_pos)
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), robot_pos)
         else:
-            #edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.nx_graph), random.randint(1, self.nx_graph.number_of_nodes()))
             # Lets not make it random, otherwise it wouldn't be deterministic
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.nx_graph), 1)
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
 
         visited_nodes = 0
-        bit = math.ceil(math.log(self.nx_graph.number_of_nodes(), 2))
+        bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
         for u, v, d in edges:
-            found = False
-            if visited_nodes != self.nx_graph.number_of_nodes():
+            if visited_nodes != self.G.number_of_nodes():
                 if d == "forward":
                     self.path.append(1)
                     self.node_path.append(v)
                     visited_nodes += 1
-                    for nod in self.node_index:
-                        k = 0
-                        for por in nod.ports:
-                            if u == por.to_node and v == por.on_port:
-                                self.ports.append(get_bin(k, bit))
-                                found = True
-                            k += 1
-                        if found:
-                            break
+                    for edge in self.G.edges(v, data=True):
+                        if edge['n2'] == u:
+                            self.ports.append(get_bin(edge['p1'], bit))
+                            break;
                 elif d == 'reverse':
                     self.path.append(0)
                     self.node_path.append(u)
-                    for nod in reversed(self.node_index):
-                        k = 0
-                        for por in nod.ports:
-                            if u == por.to_node and v == por.on_port:
-                                self.ports.append(get_bin(k, bit))
-                                found = True
-                            k += 1
-                        if found:
-                            break
+                    for edge in self.G.edges(u, data=True):
+                        if edge['n1'] == v:
+                            self.ports.append(get_bin(edge['p2'], bit))
+                            break;
             elif d == 'reverse':
                 self.back_source.append(0)
 
@@ -68,29 +95,3 @@ class Graph:
         print('Back to the source: ', self.back_source)
         print('DFS sequence of nodes: ', self.node_path)
         print('DFS sequence of ports: ', self.ports)
-
-class Node:
-    def __init__(self, n_id, ports):
-        self.id = n_id
-        self.ports = ports
-
-    def allPortTaken(self):
-        return all([p.taken for p in self.ports])
-
-    def deg(self):
-        return len(self.ports)
-
-    def to_string(self):
-        print("id:", self.id, "ports:", self.ports)
-
-class Port:
-    def __init__(self, to_node, on_port):
-        self.to_node = to_node
-        self.on_port = on_port
-        self.taken = False
-
-    def to_string(self):
-        print("n1:", self.to_node, "n2:", self.on_port, "taken: ", self.taken)
-
-    def equals(self, other):
-        return other is not None and self.to_node == other.to_node and self.on_port == other.on_port
