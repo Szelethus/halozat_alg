@@ -5,149 +5,64 @@ import networkx as nx
 from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
-from Node import Node, Port
+from Node import Graph, Node, Port, MAP_ORACLE, INSTANCE_ORACLE
 from pprint import pprint
 from collections import defaultdict
 
-import plot
-import pygame
-import pylab
-from pygame.locals import *
-import time
+
+# https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
+
+# Sanity check to see if the nodes and ports are present in Graph
+def verify_nodes_and_ports(G, node, port):
+    if G.nodes().get(node, None) is None:
+        print("Node : {} is not present in Graph".format(node))
+        return False
+
+    if G.nodes(data=True)[node]['ports'][port] is None:
+        print("Port ID :{} is incorrect for Node ID : {}!".
+              format(node, port))
+    return False
+
+    return True
 
 
-def get_bin(x, n=0):
-    return format(x, 'b').zfill(n)
+def add_edge_port(G, node1, port1, node2, port2):
+    verify_nodes_and_ports(G, node1, port1)
+    verify_nodes_and_ports(G, node2, port2)
 
+    G.add_edge(node1, node2, p1=port1, p2=port2)
 
-G = nx.Graph()
+def construct_graph(node_count, edges_with_ports):
+    G = nx.Graph()
 
-G.add_nodes_from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24])
-G.add_edges_from([(1, 2), (1, 3), (1, 4),
-                  (2, 3), (2, 4),
-                  (3, 4),
-                  (4, 5), (4, 6), (4, 7), (4, 8),
-                  (5, 6), (5, 7), (5, 8),
-                  (6, 7), (6, 8), (6, 9), (6, 10),
-                  (7, 11), (7, 12),
-                  (9, 10),
-                  (11, 12),
-                  (12, 13), (12, 14), (12, 15),
-                  (14, 16), (14, 17),
-                  (15, 18), (15, 21),
-                  (16, 17),
-                  (18, 19), (18, 20),
-                  (21, 22), (21, 23), (21, 24),
-                  (22, 23), (22, 24),
-                  (23, 24)])
+    # Initialize the graph with the nodes with only a single port.
+    # (the graph must be connected, so this this is okay, tho verification would
+    # be nice)
+    for i in range(0, node_count):
+        G.add_node(i, ports=[0])
 
-nx.draw(minimum_spanning_tree(G), with_labels=True, font_weight='bold')
-plt.show()
+    # Count how many ports each of the nodes have by inspecting the edge list.
+    idx = 0
+    while idx < len(edges_with_ports):
+        current_edge_count = 0
+        current_node = edges_with_ports[idx]['n1']
+        while idx < len(edges_with_ports) and edges_with_ports[idx]['n1'] == current_node:
+            current_edge_count = current_edge_count + 1
+            idx = idx + 1
+            G.nodes(data=True)[current_node]['ports'].append(current_edge_count)
 
-print('Number of Nodes:', G.number_of_nodes())
+    # Connect these ports with edges.
+    for e in edges_with_ports:
+        add_edge_port(G, e['n1'], e['p1'], e['n2'], e['p2'])
 
-nodes = [Node(1, [Port(1, 2), Port(1, 3), Port(1, 4)]),
-         Node(2, [Port(1, 2), Port(2, 3), Port(2, 4)]),
-         Node(3, [Port(1, 3), Port(2, 3), Port(3, 4)]),
-         Node(4, [Port(1, 4), Port(2, 4), Port(3, 4), Port(4, 5), Port(4, 6), Port(4, 7), Port(4, 8)]),
-         Node(5, [Port(4, 5), Port(5, 6), Port(5, 7), Port(5, 8)]),
-         Node(6, [Port(4, 6), Port(5, 6), Port(6, 7), Port(6, 8), Port(6, 9), Port(6, 10)]),
-         Node(7, [Port(4, 7), Port(5, 7), Port(6, 7), Port(7, 8), Port(7, 11), Port(7, 12)]),
-         Node(8, [Port(4, 8), Port(5, 8), Port(6, 8), Port(7, 8)]),
-         Node(9, [Port(6, 9), Port(9, 10)]),
-         Node(10, [Port(6, 10), Port(9, 10)]),
-         Node(11, [Port(7, 11), Port(11, 12)]),
-         Node(12, [Port(6, 12), Port(11, 12), Port(12, 13), Port(12, 14), Port(12, 15)]),
-         Node(13, [Port(12, 13)]),
-         Node(14, [Port(12, 14), Port(14, 16), Port(14, 17)]),
-         Node(15, [Port(12, 15), Port(15, 18), Port(15, 21)]),
-         Node(16, [Port(14, 16), Port(16, 17)]),
-         Node(17, [Port(14, 17), Port(16, 17)]),
-         Node(18, [Port(15, 18), Port(18, 19), Port(18, 20)]),
-         Node(19, [Port(18, 19)]),
-         Node(20, [Port(18, 20)]),
-         Node(21, [Port(15, 21), Port(21, 22), Port(21, 23), Port(21, 24)]),
-         Node(22, [Port(21, 22), Port(22, 23), Port(22, 24)]),
-         Node(23, [Port(21, 23), Port(22, 23), Port(23, 24)]),
-         Node(24, [Port(21, 23), Port(22, 24), Port(23, 24)])]
+    return G
 
-robot_pos = 1
-# Map oracle = 0 , Instance oracle = 1
-oracle = 0
-if oracle == 0:
-    edges = nx.dfs_labeled_edges(minimum_spanning_tree(G), robot_pos)
-else:
-    edges = nx.dfs_labeled_edges(minimum_spanning_tree(G), random.randint(1, G.number_of_nodes()))
+G = construct_graph(5, [
+    dict(n1=0, p1=2, n2=0, p2=0),
+    dict(n1=0, p1=0, n2=4, p2=0),
+    dict(n1=0, p1=1, n2=2, p2=0),
+    dict(n1=2, p1=1, n2=3, p2=0)
+])
 
-pygame.init()
-fig = pylab.figure(figsize=[7, 5], dpi=100)
-window = pygame.display.set_mode((700, 500), DOUBLEBUF)
-screen = pygame.display.get_surface()
-running = True
-while running:
-    # if the user wants to close the window after the algorithm is finished
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    path = []
-    node_path = []
-    back_source = []
-    ports = []
-    visited_nodes = 0
-    bit = math.ceil(math.log(G.number_of_nodes(), 2))
-    print('bit:', bit)
-
-    for u, v, d in edges:
-        # if the user wants to close the window during the algorithm is running
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        if running == False:
-            pygame.quit()
-
-        # color only the currently used edge
-        plot.clear_edge_colors(G)
-        found = False
-        if visited_nodes != G.number_of_nodes():
-            if d == "forward":
-                path.append(1)
-                node_path.append(v)
-                visited_nodes += 1
-                for nod in nodes:
-                    k = 0
-                    for por in nod.ports:
-                        if u == por.n1 and v == por.n2:
-                            next_edge = plot.find_next_edge(por)
-                            plot.color_forward_edge(G, next_edge)
-                            ports.append(get_bin(k, bit))
-                            found = True
-                        k += 1
-                    if found:
-                        break
-            elif d == 'reverse':
-                path.append(0)
-                node_path.append(u)
-                for nod in reversed(nodes):
-                    k = 0
-                    for por in nod.ports:
-                        if u == por.n1 and v == por.n2:
-                            next_edge = plot.find_next_edge(por)
-                            plot.color_reverse_edge(G, next_edge)
-                            ports.append(get_bin(k, bit))
-                            found = True
-                        k += 1
-                    if found:
-                        break
-        elif d == 'reverse':
-            back_source.append(0)
-            
-        time.sleep(1)
-
-        plot.draw_window(G, screen, fig)
-        pygame.display.flip()
-
-    print('Structure of the graph (1:forward, 0:reverse): ', path)
-    print('Back to the source: ', back_source)
-    print('DFS sequence of nodes: ', node_path)
-    print('DFS sequence of ports: ', ports)
-pygame.quit()
+# List the edges connected to node 0:
+print(G.edges(0, data=True))
