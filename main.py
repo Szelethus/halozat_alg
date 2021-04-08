@@ -5,7 +5,7 @@ import networkx as nx
 from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
-from Node import Node, Port
+from Node import Graph, Node, Port, MAP_ORACLE, INSTANCE_ORACLE
 from pprint import pprint
 from collections import defaultdict
 
@@ -36,7 +36,7 @@ G.add_edges_from([(1, 2), (1, 3), (1, 4),
                   (23, 24)])
 
 nx.draw(minimum_spanning_tree(G), with_labels=True, font_weight='bold')
-plt.show()
+#plt.show()
 
 print('Number of Nodes:', G.number_of_nodes())
 
@@ -65,53 +65,8 @@ nodes = [Node(1, [Port(1, 2), Port(1, 3), Port(1, 4)]),
          Node(23, [Port(21, 23), Port(22, 23), Port(23, 24)]),
          Node(24, [Port(21, 23), Port(22, 24), Port(23, 24)])]
 
+NewGraph = Graph(G, nodes)
+
 robot_pos = 1
-# Map oracle = 0 , Instance oracle = 1
-oracle = 0
-if oracle == 0:
-    edges = nx.dfs_labeled_edges(minimum_spanning_tree(G), robot_pos)
-else:
-    edges = nx.dfs_labeled_edges(minimum_spanning_tree(G), random.randint(1, G.number_of_nodes()))
 
-path = []
-node_path = []
-back_source = []
-ports = []
-visited_nodes = 0
-bit = math.ceil(math.log(G.number_of_nodes(), 2))
-print('bit:', bit)
-for u, v, d in edges:
-    found = False
-    if visited_nodes != G.number_of_nodes():
-        if d == "forward":
-            path.append(1)
-            node_path.append(v)
-            visited_nodes += 1
-            for nod in nodes:
-                k = 0
-                for por in nod.ports:
-                    if u == por.n1 and v == por.n2:
-                        ports.append(get_bin(k, bit))
-                        found = True
-                    k += 1
-                if found:
-                    break
-        elif d == 'reverse':
-            path.append(0)
-            node_path.append(u)
-            for nod in reversed(nodes):
-                k = 0
-                for por in nod.ports:
-                    if u == por.n1 and v == por.n2:
-                        ports.append(get_bin(k, bit))
-                        found = True
-                    k += 1
-                if found:
-                    break
-    elif d == 'reverse':
-        back_source.append(0)
-
-print('Structure of the graph (1:forward, 0:reverse): ', path)
-print('Back to the source: ', back_source)
-print('DFS sequence of nodes: ', node_path)
-print('DFS sequence of ports: ', ports)
+print(NewGraph.encode(MAP_ORACLE, robot_pos))
