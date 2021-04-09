@@ -12,10 +12,12 @@ class Graph:
     def __init__(self, node_count, edges_with_ports):
         self.path = []
         self.node_path = []
-        self.back_source = []
         self.ports = []
+        self.ports_decimal = []
 
         self.G = nx.Graph()
+
+        # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
     
         # Initialize the graph with the nodes with only a single port.
         # (the graph must be connected, so this this is okay, tho verification would
@@ -73,26 +75,34 @@ class Graph:
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
         for u, v, d in edges:
+            if u == v:
+                continue
             if visited_nodes != self.G.number_of_nodes():
                 if d == "forward":
                     self.path.append(1)
-                    self.node_path.append(v)
+                    self.node_path.append(u)
                     visited_nodes += 1
-                    self.ports.append(get_binary(self.get_port_to(v, u), bit))
+                    self.ports.append(get_binary(self.get_port_to(u, v), bit))
+                    self.ports_decimal.append(self.get_port_to(u, v))
                 elif d == 'reverse':
                     self.path.append(0)
-                    self.node_path.append(u)
-                    self.ports.append(get_binary(self.get_port_to(u, v), bit))
-            elif d == 'reverse':
-                self.back_source.append(0)
+                    self.node_path.append(v)
+                    self.ports.append(get_binary(self.get_port_to(v, u), bit))
+                    self.ports_decimal.append(self.get_port_to(v, u))
+            #elif d == 'reverse':
+            #    self.back_source.append(0)
 
         # The first 1 seems to be excessive, idk why.
         self.path.pop(0)
 
-        return ''.join(str(x) for x in self.path + self.back_source + self.ports)
+        return ''.join(str(x) for x in self.path + [0] + self.ports)
+
+    def decode(self, code):
+        edges = []
+
 
     def to_string(self):
         print('Structure of the graph (1:forward, 0:reverse): ', self.path)
-        print('Back to the source: ', self.back_source)
         print('DFS sequence of nodes: ', self.node_path)
         print('DFS sequence of ports: ', self.ports)
+        print('DFS sequence of ports in decimal: ', self.ports_decimal)
