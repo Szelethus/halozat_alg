@@ -76,9 +76,10 @@ class TestSum(unittest.TestCase):
     #      \
     #       0
     #        (2) 1----0 (3)
-    def test_tiny_graph(self):
+    def test_tiny_graph_from_dict(self):
 
-        NewGraph = Graph(5, [
+        NewGraph = Graph()
+        NewGraph.init_with_dicts(5, [
             dict(n1=0, p1=2, n2=1, p2=0),
             dict(n1=0, p1=0, n2=4, p2=0),
             dict(n1=0, p1=1, n2=2, p2=0),
@@ -88,7 +89,20 @@ class TestSum(unittest.TestCase):
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
         NewGraph.to_string()
 
-        nx.draw(NewGraph.decode('10101100'), with_labels=True, font_weight='bold')
+    def test_tiny_graph_from_decode(self):
+        GraphToEncode = Graph()
+        GraphToEncode.init_with_dicts(5, [
+            dict(n1=0, p1=2, n2=1, p2=0),
+            dict(n1=0, p1=0, n2=4, p2=0),
+            dict(n1=0, p1=1, n2=2, p2=0),
+            dict(n1=2, p1=1, n2=3, p2=0)
+        ])
+
+        robot_pos = 0
+        NewGraph = Graph()
+        NewGraph.init_with_decode(GraphToEncode.encode(INSTANCE_ORACLE, robot_pos))
+
+        nx.draw(NewGraph.G, with_labels=True, font_weight='bold')
         plt.show()
 
 if __name__ == '__main__':
