@@ -59,8 +59,9 @@ class Graph:
     #   self.G.get_edge_data(from, to)
     # Which is equivalent to this:
     #   self.G.get_edge_data(to, from)
-    # Port numbers are however not interchangable; as such, the following tuple
-    # serves as edge attributes:
+    # Port numbers are however not interchangable, and this makes it impossible
+    # to know whether 'p1' belongs to the 'to' node or the 'from' node; as such,
+    # the following tuple serves as edge attributes:
     #   node1, port1, node2, port2
     def add_edge_port(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node2, port2)
