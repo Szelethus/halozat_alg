@@ -103,6 +103,7 @@ class TestSum(unittest.TestCase):
         NewGraph.init_with_decode(GraphToEncode.encode(INSTANCE_ORACLE, robot_pos))
 
         nx.draw(NewGraph.G, with_labels=True, font_weight='bold')
+        NewGraph.print_graph()
         plt.show()
 
 if __name__ == '__main__':

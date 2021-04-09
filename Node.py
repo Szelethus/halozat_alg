@@ -154,7 +154,9 @@ class Graph:
 
             # 0 means "go up in the tree".
             if structure_bit == '0':
-                current_node = parents.pop()
+                next_node = parents.pop()
+                self.G.get_edge_data(next_node, current_node)['p2'] = port
+                current_node = next_node
 
             # 1 means "go down in the tree" (to an unvisited node).
             else:
@@ -166,6 +168,9 @@ class Graph:
 
                 parents.append(current_node)
                 current_node = new_node
+
+    def print_graph(self):
+        print(self.G.edges(data=True))
 
     def to_string(self):
         print('Structure of the graph (1:forward, 0:reverse): ', self.path)
