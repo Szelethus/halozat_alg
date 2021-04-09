@@ -9,19 +9,20 @@ def get_binary(x, n=0):
     return format(x, 'b').zfill(n)
 
 class Graph:
-    def __init__(self, node_count, edges_with_ports):
+    def __init__(self):
         self.path = []
         self.node_path = []
         self.ports = []
         self.ports_decimal = []
 
+    def init_with_dicts(self, node_count, edges_with_ports):
         self.G = nx.Graph()
 
         # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
     
-        # Initialize the graph with the nodes with only a single port.
-        # (the graph must be connected, so this this is okay, tho verification would
-        # be nice)
+        # Initialize the graph with the nodes having only a single port.
+        # (the graph must be connected, so each node must have at least one
+        # edge, tho verification of the connectivity would be nice)
         for i in range(0, node_count):
             self.G.add_node(i, ports=[0])
     
@@ -44,20 +45,37 @@ class Graph:
             print("Node : {} is not present in Graph".format(node))
             return False
     
-        if self.G.nodes(data=True)[node]['ports'][port] is None:
-            print("Port ID :{} is incorrect for Node ID : {}!".
-                  format(node, port))
+        if port not in self.G.nodes(data=True)[node]['ports']:
+            print("Port ID : {} is incorrect for Node ID : {}!".
+                  format(port, node))
         return False
     
         return True
     
     
+    # Connect two nodes on their ports with an edge. Port numbers are added as
+    # edge attributes.
+    # The query of edge attributes may be done as such:
+    #   self.G.get_edge_data(from, to)
+    # Which is equivalent to this:
+    #   self.G.get_edge_data(to, from)
+    # Port numbers are however not interchangable, and this makes it impossible
+    # to know whether 'p1' belongs to the 'to' node or the 'from' node; as such,
+    # the following tuple serves as edge attributes:
+    #   node1, port1, node2, port2
     def add_edge_port(self, node1, port1, node2, port2):
-        self.verify_nodes_and_ports(node1, port1)
         self.verify_nodes_and_ports(node2, port2)
+        self.add_edge_port_dont_verify_port2(node1, port1, node2, port2)
+
+    # The port number during decoding is supplied such that we recieve the port
+    # "on the way down", and the one "on the way back" a bit later. As such,
+    # the second port will be missing.
+    def add_edge_port_dont_verify_port2(self, node1, port1, node2, port2):
+        self.verify_nodes_and_ports(node1, port1)
     
         self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
 
+    # See comments for add_edge_port().
     def get_port_to(self, from_, to):
         data = self.G.get_edge_data(from_, to)
         if (data['n1'] == from_):
@@ -89,40 +107,93 @@ class Graph:
                     self.node_path.append(v)
                     self.ports.append(get_binary(self.get_port_to(v, u), bit))
                     self.ports_decimal.append(self.get_port_to(v, u))
-            #elif d == 'reverse':
-            #    self.back_source.append(0)
 
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
-    def decode(self, code):
-        G = nx.Graph()
+    # Find the bit deparating the structure of the graph and the port numbers.
+    #
+    # <structure of the graph>0<port numbers>
+    #                          ^~~~~~~~~~~~~~~first return value points to the
+    #                                         first bit of the first port
+    def get_code_halfway_point(self, code):
+        depth = 0
+        idx = 0
+        node_count = 1
 
-        # Add a root.
-        G.add_node(0, ports=[])
-        current_node = 0
-        # Parent stack. Last element is the parent of the current node, the one
-        # before that is the parent of the last element, and so on.
-        parents = []
-        
-        for c in code:
+        while idx < len(code):
+            c = code[idx]
+            idx = idx + 1
+
             # We finished parsing the structure of the graph.
-            if current_node == 0 and c == '0':
+            if depth == 0 and c == '0':
                 break;
             # 0 means "go up in the tree".
             elif c == '0':
-                current_node = parents.pop()
+                depth = depth - 1
             # 1 means "go down in the tree" (to an unvisited node).
             else:
-                new_node = G.number_of_nodes()
-                G.add_node(new_node, ports=[0])
-                G.add_edge(current_node, new_node);
-                G.nodes(data=True)[current_node]['ports'].append(len(G.edges(current_node)) - 1)
+                depth = depth + 1
+                node_count = node_count + 1
+
+        return idx, node_count
+        
+    def init_with_decode(self, code):
+        self.G = nx.Graph()
+
+        halfway_point, node_count = self.get_code_halfway_point(code)
+        port_length = math.ceil(math.log(node_count, 2)) 
+
+        structure_idx = 0
+        port_idx = halfway_point
+
+        self.G = nx.Graph()
+
+        # Add a root.
+        self.G.add_node(0, ports=[])
+        current_node = 0
+
+        # Parent stack. Last element is the parent of the current node, the one
+        # before that is the parent of the last element, and so on.
+        parents = []
+
+        while structure_idx < halfway_point - 1:
+            structure_bit = code[structure_idx]
+            structure_idx = structure_idx + 1
+
+            # Port numbers will be assigned such that 'p1' will be the port
+            # "going down", and 'p2' the port "going up".
+            port_word = code[port_idx : port_idx + port_length]
+            port = int(port_word, 2)
+            port_idx = port_idx + port_length
+
+            # We finished parsing the structure of the graph. This can only
+            # occur if we reached the halfway point, in which case we should not
+            # have entered another iteration, or if we messed up something.
+            assert current_node != 0 or structure_bit != '0'
+
+            # 0 means "go up in the tree".
+            if structure_bit == '0':
+                next_node = parents.pop()
+                self.G.get_edge_data(next_node, current_node)['p2'] = port
+                current_node = next_node
+
+            # 1 means "go down in the tree" (to an unvisited node).
+            else:
+                new_node = self.G.number_of_nodes()
+                self.G.add_node(new_node, ports=[0])
+                self.G.nodes(data=True)[current_node]['ports'].append(port)
+
+                self.add_edge_port_dont_verify_port2(current_node, port, new_node, 'MISSING')
+
                 parents.append(current_node)
                 current_node = new_node
-        return G
 
+        assert port_idx == len(code), "Failed to read port numbers! Faulty code?"
 
-    def to_string(self):
+    def print_graph(self):
+        print(self.G.edges(data=True))
+
+    def print_encoding_info(self):
         print('Structure of the graph (1:forward, 0:reverse): ', self.path)
         print('DFS sequence of nodes: ', self.node_path)
         print('DFS sequence of ports: ', self.ports)
