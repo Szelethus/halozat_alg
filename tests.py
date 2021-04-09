@@ -88,5 +88,8 @@ class TestSum(unittest.TestCase):
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
         NewGraph.to_string()
 
+        nx.draw(NewGraph.decode('10101100'), with_labels=True, font_weight='bold')
+        plt.show()
+
 if __name__ == '__main__':
     unittest.main()

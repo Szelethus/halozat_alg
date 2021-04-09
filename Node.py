@@ -92,13 +92,34 @@ class Graph:
             #elif d == 'reverse':
             #    self.back_source.append(0)
 
-        # The first 1 seems to be excessive, idk why.
-        self.path.pop(0)
-
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
     def decode(self, code):
-        edges = []
+        G = nx.Graph()
+
+        # Add a root.
+        G.add_node(0, ports=[])
+        current_node = 0
+        # Parent stack. Last element is the parent of the current node, the one
+        # before that is the parent of the last element, and so on.
+        parents = []
+        
+        for c in code:
+            # We finished parsing the structure of the graph.
+            if current_node == 0 and c == '0':
+                break;
+            # 0 means "go up in the tree".
+            elif c == '0':
+                current_node = parents.pop()
+            # 1 means "go down in the tree" (to an unvisited node).
+            else:
+                new_node = G.number_of_nodes()
+                G.add_node(new_node, ports=[0])
+                G.add_edge(current_node, new_node);
+                G.nodes(data=True)[current_node]['ports'].append(len(G.edges(current_node)) - 1)
+                parents.append(current_node)
+                current_node = new_node
+        return G
 
 
     def to_string(self):
