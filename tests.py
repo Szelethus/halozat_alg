@@ -87,7 +87,11 @@ class TestSum(unittest.TestCase):
         ])
         robot_pos = 0
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
-        NewGraph.to_string()
+        NewGraph.print_encoding_info()
+
+        # Ideally, we should check structural equivalence.
+        assert self.path == [1, 0, 1, 0, 1, 1, 0, 0]
+        assert self.ports_decimal == [2, 0, 0, 0, 1, 1, 0, 0]
 
     def test_tiny_graph_from_decode(self):
         GraphToEncode = Graph()
@@ -102,9 +106,10 @@ class TestSum(unittest.TestCase):
         NewGraph = Graph()
         NewGraph.init_with_decode(GraphToEncode.encode(INSTANCE_ORACLE, robot_pos))
 
-        nx.draw(NewGraph.G, with_labels=True, font_weight='bold')
         NewGraph.print_graph()
-        plt.show()
+        # TODO: Check structural equivalence.
+        #nx.draw(NewGraph.G, with_labels=True, font_weight='bold')
+        #plt.show()
 
 if __name__ == '__main__':
     unittest.main()

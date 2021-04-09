@@ -20,9 +20,9 @@ class Graph:
 
         # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
     
-        # Initialize the graph with the nodes with only a single port.
-        # (the graph must be connected, so this this is okay, tho verification would
-        # be nice)
+        # Initialize the graph with the nodes having only a single port.
+        # (the graph must be connected, so each node must have at least one
+        # edge, tho verification of the connectivity would be nice)
         for i in range(0, node_count):
             self.G.add_node(i, ports=[0])
     
@@ -53,15 +53,28 @@ class Graph:
         return True
     
     
+    # Connect two nodes on their ports with an edge. Port numbers are added as
+    # edge attributes.
+    # The query of edge attributes may be done as such:
+    #   self.G.get_edge_data(from, to)
+    # Which is equivalent to this:
+    #   self.G.get_edge_data(to, from)
+    # Port numbers are however not interchangable; as such, the following tuple
+    # serves as edge attributes:
+    #   node1, port1, node2, port2
     def add_edge_port(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node2, port2)
         self.add_edge_port_dont_verify_port2(node1, port1, node2, port2)
 
+    # The port number during decoding is supplied such that we recieve the port
+    # "on the way down", and the one "on the way back" a bit later. As such,
+    # the second port will be missing.
     def add_edge_port_dont_verify_port2(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node1, port1)
     
         self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
 
+    # See comments for add_edge_port().
     def get_port_to(self, from_, to):
         data = self.G.get_edge_data(from_, to)
         if (data['n1'] == from_):
@@ -93,11 +106,14 @@ class Graph:
                     self.node_path.append(v)
                     self.ports.append(get_binary(self.get_port_to(v, u), bit))
                     self.ports_decimal.append(self.get_port_to(v, u))
-            #elif d == 'reverse':
-            #    self.back_source.append(0)
 
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
+    # Find the bit deparating the structure of the graph and the port numbers.
+    #
+    # <structure of the graph>0<port numbers>
+    #                          ^~~~~~~~~~~~~~~first return value points to the
+    #                                         first bit of the first port
     def get_code_halfway_point(self, code):
         depth = 0
         idx = 0
@@ -143,13 +159,15 @@ class Graph:
             structure_bit = code[structure_idx]
             structure_idx = structure_idx + 1
 
+            # Port numbers will be assigned such that 'p1' will be the port
+            # "going down", and 'p2' the port "going up".
             port_word = code[port_idx : port_idx + port_length]
             port = int(port_word, 2)
             port_idx = port_idx + port_length
 
             # We finished parsing the structure of the graph. This can only
-            # occur if we reached the halfway point, or if we messed up
-            # something.
+            # occur if we reached the halfway point, in which case we should not
+            # have entered another iteration, or if we messed up something.
             assert current_node != 0 or structure_bit != '0'
 
             # 0 means "go up in the tree".
@@ -169,10 +187,12 @@ class Graph:
                 parents.append(current_node)
                 current_node = new_node
 
+        assert port_idx == len(code), "Failed to read port numbers! Faulty code?"
+
     def print_graph(self):
         print(self.G.edges(data=True))
 
-    def to_string(self):
+    def print_encoding_info(self):
         print('Structure of the graph (1:forward, 0:reverse): ', self.path)
         print('DFS sequence of nodes: ', self.node_path)
         print('DFS sequence of ports: ', self.ports)
