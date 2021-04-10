@@ -72,7 +72,7 @@ class Graph:
     # the second port will be missing.
     def add_edge_port_dont_verify_port2(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node1, port1)
-    
+        
         self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
 
     # See comments for add_edge_port().
@@ -198,3 +198,14 @@ class Graph:
         print('DFS sequence of nodes: ', self.node_path)
         print('DFS sequence of ports: ', self.ports)
         print('DFS sequence of ports in decimal: ', self.ports_decimal)
+
+    def get_edge_labels(self):
+        edge_labels = {}
+        for node1, node2, data in self.G.edges.data():
+                edge_labels[(node1, node2)] = (data['p1'], data['p2'])
+
+        formatted_edge_labels = {(elem[0],elem[1]): edge_labels[elem] for elem in edge_labels} # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
+        
+        return formatted_edge_labels
+
+        
