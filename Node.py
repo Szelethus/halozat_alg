@@ -208,4 +208,24 @@ class Graph:
         
         return formatted_edge_labels
 
-        
+    def get_map_oracle_f_tours(self):
+        f_tours = []
+
+        for root in self.G.nodes():
+            ports = []
+            visited_nodes = 0
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), root)
+            for u, v, d in edges:
+                if u == v:
+                    continue
+                if visited_nodes != self.G.number_of_nodes():
+                    if d == "forward":
+                        visited_nodes += 1
+                        ports.append(self.get_port_to(u, v))
+                        ports.append(self.get_port_to(v, u))
+                    elif d == 'reverse':
+                        ports.append(self.get_port_to(v, u))
+                        ports.append(self.get_port_to(u, v))
+            # print(ports + ports[::-1])
+            f_tours.append(ports + ports[::-1])
+        return f_tours
