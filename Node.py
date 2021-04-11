@@ -226,6 +226,6 @@ class Graph:
                     elif d == 'reverse':
                         ports.append(self.get_port_to(v, u))
                         ports.append(self.get_port_to(u, v))
-            # print(ports + ports[::-1])
-            f_tours.append(ports + ports[::-1])
+            print(ports + ports[::-1])
+            f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
