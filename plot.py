@@ -2,8 +2,12 @@ import networkx as nx
 import pygame
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use("Agg")
+# matplotlib.use("Agg")
 import matplotlib.backends.backend_agg as agg
+import plot
+import pylab
+from pygame.locals import *
+import time
 
 def clear_edge_colors(graph):
     for u, v in graph.edges():
@@ -14,17 +18,17 @@ def find_next_edge(port):
     print("Next edge: ", next_edge[0], ", ", next_edge[1])
     return next_edge
 
-def color_forward_edge(graph, next_edge):
-    i = next_edge[0]
-    j = next_edge[1]
-    graph.edges[i, j]['color'] = 'red'
+def color_forward_edge(graph, from_, to):
+    graph.edges[from_, to]['color'] = 'red'
+    print("The color of the edge:")
+    print(graph.edges[from_, to]['color'])
 
-def color_reverse_edge(graph, next_edge):
-    i = next_edge[0]
-    j = next_edge[1]
-    graph.edges[i, j]['color'] = 'orange'
+def color_reverse_edge(graph, from_, to):
+    graph.edges[from_, to]['color'] = 'orange'
+    print("The color of the edge:")
+    print(graph.edges[from_, to]['color'])
 
-def draw_window(graph, game_screen, fig):
+def draw_window(graph, game_screen, fig, Graph):
     edges = graph.edges()
     colors = [graph[u][v]['color'] for u, v in edges]
     fig.clf()
@@ -32,6 +36,8 @@ def draw_window(graph, game_screen, fig):
     nx.draw_networkx_nodes(graph, my_pos)
     nx.draw_networkx_edges(graph, my_pos)
     node_labels = nx.get_node_attributes(graph, 'id')
+    formatted_edge_labels = Graph.get_edge_labels()
+    nx.draw_networkx_edge_labels(graph,my_pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
     nx.draw_networkx_labels(graph, pos=my_pos)
     nx.draw(graph, edge_color=colors, pos=my_pos)
     plt.tight_layout()
@@ -42,3 +48,9 @@ def draw_window(graph, game_screen, fig):
     size = canvas.get_width_height()
     surf = pygame.image.fromstring(raw_data, size, "RGB")
     game_screen.blit(surf, (0, 0))
+
+def init_environment():
+    pygame.init()
+    fig = pylab.figure(figsize=[7, 5], dpi=100)
+    window = pygame.display.set_mode((700, 500), DOUBLEBUF)
+    screen = pygame.display.get_surface()
