@@ -96,4 +96,5 @@ pos = {
     23 : (530, 250)
 }
 NewGraph.print_encoding_info()
+print(NewGraph.encode(INSTANCE_ORACLE, 0))
 NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos, pos)

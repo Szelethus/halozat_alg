@@ -15,6 +15,9 @@ def get_binary(x, n=0):
 
 class Graph:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.path = []
         self.node_path = []
         self.ports = []
@@ -95,6 +98,7 @@ class Graph:
             # Lets not make it random, otherwise it wouldn't be deterministic
             edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
 
+        self.reset()
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
         for u, v, d in edges:
@@ -112,7 +116,6 @@ class Graph:
                     self.node_path.append(v)
                     self.ports.append(get_binary(self.get_port_to(v, u), bit))
                     self.ports_decimal.append(self.get_port_to(v, u))
-
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
     # Find the bit deparating the structure of the graph and the port numbers.
@@ -242,6 +245,7 @@ class Graph:
             # Lets not make it random, otherwise it wouldn't be deterministic
             edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
 
+        self.reset()
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
 
