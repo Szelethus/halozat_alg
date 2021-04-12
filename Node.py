@@ -11,8 +11,10 @@ import random
 MAP_ORACLE = 0
 INSTANCE_ORACLE = 1
 
+
 def get_binary(x, n=0):
     return format(x, 'b').zfill(n)
+
 
 class Graph:
     def __init__(self):
@@ -25,13 +27,13 @@ class Graph:
         self.G = nx.Graph()
 
         # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
-    
+
         # Initialize the graph with the nodes having only a single port.
         # (the graph must be connected, so each node must have at least one
         # edge, tho verification of the connectivity would be nice)
         for i in range(0, node_count):
             self.G.add_node(i, ports=[0])
-    
+
         # Count how many ports each of the nodes have by inspecting the edge list.
         idx = 0
         while idx < len(edges_with_ports):
@@ -41,24 +43,23 @@ class Graph:
                 current_edge_count = current_edge_count + 1
                 idx = idx + 1
                 self.G.nodes(data=True)[current_node]['ports'].append(current_edge_count)
-    
+
         # Connect these ports with edges.
         for e in edges_with_ports:
             self.add_edge_port(e['n1'], e['p1'], e['n2'], e['p2'])
-    
+
     def verify_nodes_and_ports(self, node, port):
         if self.G.nodes().get(node, None) is None:
             print("Node : {} is not present in Graph".format(node))
             return False
-    
+
         if port not in self.G.nodes(data=True)[node]['ports']:
             print("Port ID : {} is incorrect for Node ID : {}!".
                   format(port, node))
         return False
-    
+
         return True
-    
-    
+
     # Connect two nodes on their ports with an edge. Port numbers are added as
     # edge attributes.
     # The query of edge attributes may be done as such:
@@ -78,7 +79,7 @@ class Graph:
     # the second port will be missing.
     def add_edge_port_dont_verify_port2(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node1, port1)
-        
+
         self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
 
     # See comments for add_edge_port().
@@ -142,12 +143,12 @@ class Graph:
                 node_count = node_count + 1
 
         return idx, node_count
-        
+
     def init_with_decode(self, code):
         self.G = nx.Graph()
 
         halfway_point, node_count = self.get_code_halfway_point(code)
-        port_length = math.ceil(math.log(node_count, 2)) 
+        port_length = math.ceil(math.log(node_count, 2))
 
         structure_idx = 0
         port_idx = halfway_point
@@ -168,7 +169,7 @@ class Graph:
 
             # Port numbers will be assigned such that 'p1' will be the port
             # "going down", and 'p2' the port "going up".
-            port_word = code[port_idx : port_idx + port_length]
+            port_word = code[port_idx: port_idx + port_length]
             port = int(port_word, 2)
             port_idx = port_idx + port_length
 
@@ -208,7 +209,7 @@ class Graph:
     def get_edge_labels(self):
         edge_labels = {}
         for node1, node2, data in self.G.edges.data():
-                edge_labels[(node1, node2)] = (data['p1'], data['p2'])
+            edge_labels[(node1, node2)] = (data['p1'], data['p2'])
 
         formatted_edge_labels = {(elem[0], elem[1]): edge_labels[elem] for elem in
                                  edge_labels}  # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
@@ -241,7 +242,7 @@ class Graph:
                         ports.append(self.get_port_to(v, u))
                         ports.append(self.get_port_to(u, v))
             print(ports + ports[::-1])
-            f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
+            f_tours.append(ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
 
     def encode_with_plotting(self, oracle_type, robot_pos):
@@ -265,7 +266,7 @@ class Graph:
                 if event.type == pygame.QUIT:
                     running = False
             for u, v, d in edges:
-                        # if the user wants to close the window during the algorithm is running
+                # if the user wants to close the window during the algorithm is running
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -291,9 +292,9 @@ class Graph:
                         self.ports.append(get_binary(self.get_port_to(v, u), bit))
                         self.ports_decimal.append(self.get_port_to(v, u))
                         plot.color_reverse_edge(self.G, v, u)
-                
+
                 plot.draw_window(self.G, screen, fig, self)
-                
+
                 pygame.display.flip()
                 time.sleep(1)
 
@@ -305,6 +306,34 @@ class Graph:
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
     def map_oracle_with_plotting(self):
+        f_tours = []
+
+        for root in self.G.nodes():
+            ports = []
+            visited_nodes = 0
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), root)
+            for u, v, d in edges:
+                if u == v:
+                    continue
+                if visited_nodes != self.G.number_of_nodes():
+                    if d == "forward":
+                        visited_nodes += 1
+                        ports.append(self.get_port_to(u, v))
+                        ports.append(self.get_port_to(v, u))
+                    elif d == 'reverse':
+                        ports.append(self.get_port_to(v, u))
+                        ports.append(self.get_port_to(u, v))
+
+            print(ports + ports[::-1])
+            f_tours.append(
+                ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
+
+        return f_tours
+
+    def map_oracle_robot(self, f_tours, robot_pos):
+        current_node = robot_pos
+        i = 0
+
         pygame.init()
         fig = pylab.figure(figsize=[7, 5], dpi=100)
         window = pygame.display.set_mode((700, 500), DOUBLEBUF)
@@ -315,46 +344,62 @@ class Graph:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            f_tours = []
+            for tour in f_tours:
+                i = 0
+                for k in range(int(len(tour) / 2)):
+                    # if the user wants to close the window during the algorithm is running
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            running = False
+                    if running == False:
+                        pygame.quit()
 
-            for root in self.G.nodes():
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                if running == False:
-                    pygame.quit()
-
-                ports = []
-                visited_nodes = 0
-                edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), root)
-                for u, v, d in edges:
                     # color only the currently used edge
                     plot.clear_edge_colors(self.G)
-                    if u == v:
-                        continue
-                    if visited_nodes != self.G.number_of_nodes():
-                        if d == "forward":
-                            visited_nodes += 1
-                            ports.append(self.get_port_to(u, v))
-                            ports.append(self.get_port_to(v, u))
-                        elif d == 'reverse':
-                            ports.append(self.get_port_to(v, u))
-                            ports.append(self.get_port_to(u, v))
+
+                    u, v = self.find_edge(tour[i], tour[i + 1], current_node)
+                    if u == len(self.G.edges):
+                        print('Cannot proceed ')
+                        current_node = robot_pos
+                        break
+                    elif u == current_node:
+                        current_node = v
+                        plot.color_forward_edge(self.G, u, v)
+                        print(u, v)
+                    elif v == current_node:
+                        current_node = u
+                        plot.color_reverse_edge(self.G, v, u)
+                        print(v, u)
 
                     plot.draw_window(self.G, screen, fig, self)
 
                     pygame.display.flip()
                     time.sleep(1)
-                print(ports + ports[::-1])
-                f_tours.append(
-                    ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
+
+                    i += 2
+                if i == len(tour):
+                    print(tour)
+                    print('Found')
 
             plot.clear_edge_colors(self.G)
             plot.draw_window(self.G, screen, fig, self)
             pygame.display.flip()
         pygame.quit()
 
-        return f_tours
+
+    def find_edge(self, p1, p2, robot_pos):
+        i = 0
+        for u, v, edge in self.G.edges.data(True):
+            if robot_pos == u:
+                if self.get_port_to(u, v) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
+                    return u, v
+            elif robot_pos == v:
+                if self.get_port_to(v, u) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
+                    return u, v
+
+            i += 1
+        if i == len(self.G.edges):
+            return i, i
 
     def get_random_graph(self, number_of_node):
         node_s = []
@@ -362,7 +407,7 @@ class Graph:
         edge_s = []
         pair_s = []
 
-        #add first n1, p1, n2, p2
+        # add first n1, p1, n2, p2
         for i in range(number_of_node):
             port_s.insert(i, 0)
         n1 = random.randint(0, number_of_node - 1)
@@ -376,7 +421,7 @@ class Graph:
         print(n1, n2, p1, p2)
         pair_s.append([n1, n2])
         edge_s.append([n1, p1, n2, p2])
-        #add other n1, p1, n2, p2 in a spanning tree
+        # add other n1, p1, n2, p2 in a spanning tree
         for i in range(1, number_of_node - 1):
             n1 = random.choice(node_s)
             p1 = port_s[n1] + 1
@@ -390,7 +435,7 @@ class Graph:
             pair_s.append([n1, n2])
             edge_s.append([n1, p1, n2, p2])
 
-        #add extra edges to the tree if you don't just need tree
+        # add extra edges to the tree if you don't just need tree
         '''for i in range(random.randint(0, int((number_of_node * (number_of_node - 1) / 2) - (number_of_node - 1)))):
             n1 = random.randint(0, number_of_node - 1)
             n2 = random.randint(0, number_of_node - 1)
@@ -406,12 +451,12 @@ class Graph:
             pair_s.append([n1, n2])
             edge_s.append([n1, p1, n2, p2])'''
 
-        #print(edge_s)
+        # print(edge_s)
 
         random_graph = 'self.init_with_dicts(' + str(number_of_node) + ', ['
 
         num_of_edges = len(edge_s)
-        #print(num_of_edges)
+        # print(num_of_edges)
         k = 0
         for edge in edge_s:
             if k != num_of_edges - 1:
