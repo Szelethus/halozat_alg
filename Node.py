@@ -259,9 +259,9 @@ class Graph:
                         self.ports.append(get_binary(self.get_port_to(v, u), bit))
                         self.ports_decimal.append(self.get_port_to(v, u))
                         plot.color_reverse_edge(self.G, v, u)
-                
+
                 plot.draw_window(self.G, screen, fig, self)
-                
+
                 pygame.display.flip()
                 time.sleep(1)
 
@@ -271,4 +271,25 @@ class Graph:
         pygame.quit()
 
         return ''.join(str(x) for x in self.path + [0] + self.ports)
-        
+
+    def get_map_oracle_f_tours(self):
+        f_tours = []
+
+        for root in self.G.nodes():
+            ports = []
+            visited_nodes = 0
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), root)
+            for u, v, d in edges:
+                if u == v:
+                    continue
+                if visited_nodes != self.G.number_of_nodes():
+                    if d == "forward":
+                        visited_nodes += 1
+                        ports.append(self.get_port_to(u, v))
+                        ports.append(self.get_port_to(v, u))
+                    elif d == 'reverse':
+                        ports.append(self.get_port_to(v, u))
+                        ports.append(self.get_port_to(u, v))
+            print(ports + ports[::-1])
+            f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
+        return f_tours

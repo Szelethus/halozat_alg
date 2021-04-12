@@ -104,19 +104,34 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
+        oracle_type = 'MAP_ORACLE'
         NewGraph = Graph()
         NewGraph.init_with_decode(GraphToEncode.encode(INSTANCE_ORACLE, robot_pos))
 
         NewGraph.print_graph()
         NewGraph.get_edge_labels()
-        
-        # TODO: Check structural equivalence.
 
+        NewGraph.init_with_decode(GraphToEncode.encode(oracle_type, robot_pos))
+        # TODO: Check structural equivalence.
+        NewGraph.get_edge_labels()
+
+        if oracle_type == 'MAP_ORACLE':
+            f_tours = NewGraph.get_map_oracle_f_tours()
+            # print(f_tours)
+
+        pos = nx.spring_layout(NewGraph.G)
+        nx.draw(NewGraph.G, pos, with_labels=True, font_weight='bold')
+        formatted_edge_labels = NewGraph.get_edge_labels()
+        nx.draw_networkx_edge_labels(NewGraph.G, pos, edge_labels=formatted_edge_labels, label_pos=0.3,
+                                     font_color='red')
+        plt.show()
         # pos = nx.spring_layout(NewGraph.G)
         # nx.draw(NewGraph.G, pos, with_labels=True, font_weight='bold')
         # formatted_edge_labels = NewGraph.get_edge_labels()
         # nx.draw_networkx_edge_labels(NewGraph.G,pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
         # plt.show()
+
+
 
 if __name__ == '__main__':
     unittest.main()
