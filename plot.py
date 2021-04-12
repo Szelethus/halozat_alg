@@ -12,12 +12,15 @@ import time
 def initialize_colors(graph):
     for u, v in graph.edges():
         graph[u][v]['color'] = 'black'
+        graph[u][v]['width'] = 1
         graph.nodes[u]['color'] = 'lightblue'
         graph.nodes[v]['color'] = 'lightblue'
         
 def clear_edge_colors(graph):
     for u, v in graph.edges():
         graph[u][v]['color'] = 'black'
+        if graph[u][v]['width'] == 5:
+            graph[u][v]['width'] = 3
 
 def find_next_edge(port):
     next_edge = [port.n1, port.n2]
@@ -26,20 +29,24 @@ def find_next_edge(port):
 
 def color_forward_edge(graph, from_, to):
     graph.edges[from_, to]['color'] = 'green'
+    graph.edges[from_, to]['width'] = 5
     graph.nodes[from_]['color'] = 'green'
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 
 def color_reverse_edge(graph, from_, to):
     graph.edges[from_, to]['color'] = 'orange'
+    graph.edges[from_, to]['width'] = 5
     graph.nodes[from_]['color'] = 'orange'
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 
 def draw_window(graph, game_screen, fig, Graph, pos):
     edge_colors = [graph[u][v]['color'] for u, v in graph.edges()]
+    edge_widths = [graph[u][v]['width'] for u, v in graph.edges()]
     node_colors = [graph.nodes[n]['color'] for n in graph.nodes()]
     fig.clf()
+
     if pos == None:
         my_pos = nx.spring_layout(graph, seed=100)
     else:
@@ -48,9 +55,11 @@ def draw_window(graph, game_screen, fig, Graph, pos):
     nx.draw_networkx_edges(graph, my_pos)
     node_labels = nx.get_node_attributes(graph, 'id')
     formatted_edge_labels = Graph.get_edge_labels()
+
     nx.draw_networkx_edge_labels(graph,my_pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
     nx.draw_networkx_labels(graph, pos=my_pos)
     nx.draw(graph, node_color=node_colors, edge_color=edge_colors, pos=my_pos)
+    nx.draw_networkx_edges(graph, my_pos, edge_color=edge_colors, width=edge_widths)
     plt.tight_layout()
     canvas = agg.FigureCanvasAgg(fig)
     canvas.draw()
