@@ -1,11 +1,6 @@
 import networkx as nx
 from networkx import minimum_spanning_tree
 import math
-import pygame
-import plot
-import pylab
-from pygame.locals import *
-import time
 
 MAP_ORACLE = 0
 INSTANCE_ORACLE = 1
@@ -209,66 +204,28 @@ class Graph:
         for node1, node2, data in self.G.edges.data():
                 edge_labels[(node1, node2)] = (data['p1'], data['p2'])
 
-        formatted_edge_labels = {(elem[0],elem[1]): edge_labels[elem] for elem in edge_labels}
+        formatted_edge_labels = {(elem[0],elem[1]): edge_labels[elem] for elem in edge_labels} # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
         
         return formatted_edge_labels
-    def encode_with_plotting(self, oracle_type, robot_pos):
-        if oracle_type == INSTANCE_ORACLE:
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), robot_pos)
-        else:
-            # Lets not make it random, otherwise it wouldn't be deterministic
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
 
-        visited_nodes = 0
-        bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
+    def get_map_oracle_f_tours(self):
+        f_tours = []
 
-        pygame.init()
-        fig = pylab.figure(figsize=[7, 5], dpi=100)
-        window = pygame.display.set_mode((700, 500), DOUBLEBUF)
-        screen = pygame.display.get_surface()
-        running = True
-        while running:
-            # if the user wants to close the window after the algorithm is finished
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+        for root in self.G.nodes():
+            ports = []
+            visited_nodes = 0
+            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), root)
             for u, v, d in edges:
-                        # if the user wants to close the window during the algorithm is running
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                if running == False:
-                    pygame.quit()
-
-                # color only the currently used edge
-                plot.clear_edge_colors(self.G)
-
                 if u == v:
                     continue
                 if visited_nodes != self.G.number_of_nodes():
                     if d == "forward":
-                        self.path.append(1)
-                        self.node_path.append(u)
                         visited_nodes += 1
-                        self.ports.append(get_binary(self.get_port_to(u, v), bit))
-                        self.ports_decimal.append(self.get_port_to(u, v))
-                        plot.color_forward_edge(self.G, u, v)
+                        ports.append(self.get_port_to(u, v))
+                        ports.append(self.get_port_to(v, u))
                     elif d == 'reverse':
-                        self.path.append(0)
-                        self.node_path.append(v)
-                        self.ports.append(get_binary(self.get_port_to(v, u), bit))
-                        self.ports_decimal.append(self.get_port_to(v, u))
-                        plot.color_reverse_edge(self.G, v, u)
-                
-                plot.draw_window(self.G, screen, fig, self)
-                
-                pygame.display.flip()
-                time.sleep(1)
-
-            plot.clear_edge_colors(self.G)
-            plot.draw_window(self.G, screen, fig, self)
-            pygame.display.flip()
-        pygame.quit()
-
-        return ''.join(str(x) for x in self.path + [0] + self.ports)
-        
+                        ports.append(self.get_port_to(v, u))
+                        ports.append(self.get_port_to(u, v))
+            print(ports + ports[::-1])
+            f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
+        return f_tours
