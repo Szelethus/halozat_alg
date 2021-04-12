@@ -88,7 +88,8 @@ class TestSum(unittest.TestCase):
         robot_pos = 0
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
         NewGraph.print_encoding_info()
-        NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos)
+        my_pos = nx.spring_layout(NewGraph.G, seed=100)
+        NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos, my_pos)
 
         # Ideally, we should check structural equivalence.
         # assert self.path == [1, 0, 1, 0, 1, 1, 0, 0]

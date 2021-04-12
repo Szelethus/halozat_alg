@@ -255,6 +255,8 @@ class Graph:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    
+            plot.initialize_colors(self.G)
             for u, v, d in edges:
                         # if the user wants to close the window during the algorithm is running
                 for event in pygame.event.get():
@@ -289,7 +291,7 @@ class Graph:
                 time.sleep(1)
 
             plot.clear_edge_colors(self.G)
-            plot.draw_window(self.G, screen, fig, self)
+            plot.draw_window(self.G, screen, fig, self, None)
             pygame.display.flip()
         pygame.quit()
 
@@ -307,7 +309,7 @@ class Graph:
                     if event.type == pygame.QUIT:
                         running = False
                 f_tours = []
-
+                plot.initialize_colors(self.G)
                 for root in self.G.nodes():
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:

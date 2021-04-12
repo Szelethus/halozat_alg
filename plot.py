@@ -9,11 +9,15 @@ import pylab
 from pygame.locals import *
 import time
 
-def clear_edge_colors(graph):
+def initialize_colors(graph):
     for u, v in graph.edges():
         graph[u][v]['color'] = 'black'
         graph.nodes[u]['color'] = 'lightblue'
         graph.nodes[v]['color'] = 'lightblue'
+        
+def clear_edge_colors(graph):
+    for u, v in graph.edges():
+        graph[u][v]['color'] = 'black'
 
 def find_next_edge(port):
     next_edge = [port.n1, port.n2]
