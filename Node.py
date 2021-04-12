@@ -235,7 +235,7 @@ class Graph:
             f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
     
-    def encode_with_plotting(self, oracle_type, robot_pos):
+    def encode_with_plotting(self, oracle_type, robot_pos, pos):
         if oracle_type == INSTANCE_ORACLE:
             edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), robot_pos)
         else:
@@ -246,8 +246,8 @@ class Graph:
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
 
         pygame.init()
-        fig = pylab.figure(figsize=[7, 5], dpi=100)
-        window = pygame.display.set_mode((700, 500), DOUBLEBUF)
+        fig = pylab.figure(figsize=[16, 8], dpi=100)
+        window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
         screen = pygame.display.get_surface()
         running = True
         while running:
@@ -283,7 +283,7 @@ class Graph:
                         self.ports_decimal.append(self.get_port_to(v, u))
                         plot.color_reverse_edge(self.G, v, u)
                 
-                plot.draw_window(self.G, screen, fig, self)
+                plot.draw_window(self.G, screen, fig, self, pos)
                 
                 pygame.display.flip()
                 time.sleep(1)

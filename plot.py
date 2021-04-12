@@ -32,14 +32,14 @@ def color_reverse_edge(graph, from_, to):
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 
-def draw_window(graph, game_screen, fig, Graph):
+def draw_window(graph, game_screen, fig, Graph, pos):
     edge_colors = [graph[u][v]['color'] for u, v in graph.edges()]
-    print(edge_colors)
-    for n in graph.nodes():
-        print(graph.nodes[n]['color'])
     node_colors = [graph.nodes[n]['color'] for n in graph.nodes()]
     fig.clf()
-    my_pos = nx.spring_layout(graph, seed=100)
+    if pos == None:
+        my_pos = nx.spring_layout(graph, seed=100)
+    else:
+        my_pos = pos
     nx.draw_networkx_nodes(graph, my_pos)
     nx.draw_networkx_edges(graph, my_pos)
     node_labels = nx.get_node_attributes(graph, 'id')
@@ -59,5 +59,5 @@ def draw_window(graph, game_screen, fig, Graph):
 def init_environment():
     pygame.init()
     fig = pylab.figure(figsize=[7, 5], dpi=100)
-    window = pygame.display.set_mode((700, 500), DOUBLEBUF)
+    window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
     screen = pygame.display.get_surface()
