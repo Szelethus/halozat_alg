@@ -6,12 +6,15 @@ import plot
 import pylab
 from pygame.locals import *
 import time
+import random
 
 MAP_ORACLE = 0
 INSTANCE_ORACLE = 1
 
+
 def get_binary(x, n=0):
     return format(x, 'b').zfill(n)
+
 
 class Graph:
     def __init__(self):
@@ -24,13 +27,13 @@ class Graph:
         self.G = nx.Graph()
 
         # https://stackoverflow.com/questions/57095809/networkx-connecting-nodes-using-ports
-    
+
         # Initialize the graph with the nodes having only a single port.
         # (the graph must be connected, so each node must have at least one
         # edge, tho verification of the connectivity would be nice)
         for i in range(0, node_count):
             self.G.add_node(i, ports=[0])
-    
+
         # Count how many ports each of the nodes have by inspecting the edge list.
         idx = 0
         while idx < len(edges_with_ports):
@@ -40,24 +43,23 @@ class Graph:
                 current_edge_count = current_edge_count + 1
                 idx = idx + 1
                 self.G.nodes(data=True)[current_node]['ports'].append(current_edge_count)
-    
+
         # Connect these ports with edges.
         for e in edges_with_ports:
             self.add_edge_port(e['n1'], e['p1'], e['n2'], e['p2'])
-    
+
     def verify_nodes_and_ports(self, node, port):
         if self.G.nodes().get(node, None) is None:
             print("Node : {} is not present in Graph".format(node))
             return False
-    
+
         if port not in self.G.nodes(data=True)[node]['ports']:
             print("Port ID : {} is incorrect for Node ID : {}!".
                   format(port, node))
         return False
-    
+
         return True
-    
-    
+
     # Connect two nodes on their ports with an edge. Port numbers are added as
     # edge attributes.
     # The query of edge attributes may be done as such:
@@ -77,7 +79,7 @@ class Graph:
     # the second port will be missing.
     def add_edge_port_dont_verify_port2(self, node1, port1, node2, port2):
         self.verify_nodes_and_ports(node1, port1)
-        
+
         self.G.add_edge(node1, node2, n1=node1, p1=port1, n2=node2, p2=port2)
 
     # See comments for add_edge_port().
@@ -141,12 +143,12 @@ class Graph:
                 node_count = node_count + 1
 
         return idx, node_count
-        
+
     def init_with_decode(self, code):
         self.G = nx.Graph()
 
         halfway_point, node_count = self.get_code_halfway_point(code)
-        port_length = math.ceil(math.log(node_count, 2)) 
+        port_length = math.ceil(math.log(node_count, 2))
 
         structure_idx = 0
         port_idx = halfway_point
@@ -167,7 +169,7 @@ class Graph:
 
             # Port numbers will be assigned such that 'p1' will be the port
             # "going down", and 'p2' the port "going up".
-            port_word = code[port_idx : port_idx + port_length]
+            port_word = code[port_idx: port_idx + port_length]
             port = int(port_word, 2)
             port_idx = port_idx + port_length
 
@@ -207,11 +209,13 @@ class Graph:
     def get_edge_labels(self):
         edge_labels = {}
         for node1, node2, data in self.G.edges.data():
-                edge_labels[(node1, node2)] = (data['p1'], data['p2'])
+            edge_labels[(node1, node2)] = (data['p1'], data['p2'])
 
-        formatted_edge_labels = {(elem[0],elem[1]): edge_labels[elem] for elem in edge_labels}
-        
+        formatted_edge_labels = {(elem[0], elem[1]): edge_labels[elem] for elem in
+                                 edge_labels}  # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
+
         return formatted_edge_labels
+
     def encode_with_plotting(self, oracle_type, robot_pos):
         if oracle_type == INSTANCE_ORACLE:
             edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), robot_pos)
@@ -233,7 +237,7 @@ class Graph:
                 if event.type == pygame.QUIT:
                     running = False
             for u, v, d in edges:
-                        # if the user wants to close the window during the algorithm is running
+                # if the user wants to close the window during the algorithm is running
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -290,6 +294,79 @@ class Graph:
                     elif d == 'reverse':
                         ports.append(self.get_port_to(v, u))
                         ports.append(self.get_port_to(u, v))
-            print(ports + ports[::-1])
-            f_tours.append(ports + ports[::-1]) #euler tour + reverse euler tour with the in,out ports of the edges
+            print(root,ports + ports[::-1])
+            f_tours.append(ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
+
+    def get_random_graph(self, number_of_node):
+        node_s = []
+        port_s = list()
+        edge_s = []
+        pair_s = []
+
+        #add first n1, p1, n2, p2
+        for i in range(number_of_node):
+            port_s.insert(i, 0)
+        n1 = random.randint(0, number_of_node - 1)
+        p1 = 0
+        node_s.append(n1)
+        n2 = random.randint(0, number_of_node - 1)
+        while (n2 == n1):
+            n2 = random.randint(0, number_of_node - 1)
+        p2 = 0
+        node_s.append(n2)
+        print(n1, n2, p1, p2)
+        pair_s.append([n1, n2])
+        edge_s.append([n1, p1, n2, p2])
+        #add other n1, p1, n2, p2 in a spanning tree
+        for i in range(1, number_of_node - 1):
+            n1 = random.choice(node_s)
+            p1 = port_s[n1] + 1
+            port_s[n1] += 1
+            n2 = random.randint(0, number_of_node - 1)
+            while n2 in node_s:
+                n2 = random.randint(0, number_of_node - 1)
+            p2 = 0
+            node_s.append(n2)
+            print(n1, n2, p1, p2)
+            pair_s.append([n1, n2])
+            edge_s.append([n1, p1, n2, p2])
+
+        #add extra edges to the tree if you don't just need tree
+        '''for i in range(random.randint(0, int((number_of_node * (number_of_node - 1) / 2) - (number_of_node - 1)))):
+            n1 = random.randint(0, number_of_node - 1)
+            n2 = random.randint(0, number_of_node - 1)
+            while [n1, n2] in pair_s or port_s[n1] == number_of_node - 2:
+                n1 = random.randint(0, number_of_node - 1)
+            p1 = port_s[n1] + 1
+            port_s[n1] += 1
+            while [n1, n2] in pair_s or [n2, n1] in pair_s or port_s[n2] == number_of_node - 2 or n2 == n1:
+                n2 = random.randint(0, number_of_node - 1)
+            p2 = port_s[n2] + 1
+            port_s[n2] += 1
+            print(n1, n2, p1, p2)
+            pair_s.append([n1, n2])
+            edge_s.append([n1, p1, n2, p2])'''
+
+        #print(edge_s)
+
+        random_graph = 'self.init_with_dicts(' + str(number_of_node) + ', ['
+
+        num_of_edges = len(edge_s)
+        #print(num_of_edges)
+        k = 0
+        for edge in edge_s:
+            if k != num_of_edges - 1:
+                random_graph = random_graph + 'dict(n1=' + str(edge[0]) + ', p1=' + str(edge[1]) + ',' \
+                                                                                                   ' n2=' + str(
+                    edge[2]) + ', p2=' + str(edge[3]) + '),'
+            else:
+                break
+            k += 1
+
+        random_graph = random_graph + 'dict(n1=' + str(edge_s[k][0]) + ', p1=' + str(edge_s[k][1]) + ',' \
+                                                                                                     ' n2=' + str(
+            edge_s[k][2]) + ', p2=' + str(edge_s[k][3]) + ')])'
+
+        G = exec(random_graph)
+        return G

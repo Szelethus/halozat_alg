@@ -79,12 +79,14 @@ class TestSum(unittest.TestCase):
     def test_tiny_graph_from_dict(self):
 
         NewGraph = Graph()
-        NewGraph.init_with_dicts(5, [
+        Graph.get_random_graph(NewGraph, 10)
+        """NewGraph.init_with_dicts(5, [
             dict(n1=0, p1=2, n2=1, p2=0),
             dict(n1=0, p1=0, n2=4, p2=0),
             dict(n1=0, p1=1, n2=2, p2=0),
             dict(n1=2, p1=1, n2=3, p2=0)
-        ])
+        ])"""
+
         robot_pos = 0
         NewGraph.encode(INSTANCE_ORACLE, robot_pos)
         NewGraph.print_encoding_info()
@@ -104,20 +106,14 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
-        oracle_type = 'MAP_ORACLE'
+        oracle_type = 'INSTANCE_ORACLE'
         NewGraph = Graph()
-        NewGraph.init_with_decode(GraphToEncode.encode(INSTANCE_ORACLE, robot_pos))
-
-        NewGraph.print_graph()
-        NewGraph.get_edge_labels()
-
-        NewGraph.init_with_decode(GraphToEncode.encode(oracle_type, robot_pos))
+        print(NewGraph.init_with_decode(GraphToEncode.encode(oracle_type, robot_pos)))
         # TODO: Check structural equivalence.
         NewGraph.get_edge_labels()
 
         if oracle_type == 'MAP_ORACLE':
             f_tours = NewGraph.get_map_oracle_f_tours()
-            # print(f_tours)
 
         pos = nx.spring_layout(NewGraph.G)
         nx.draw(NewGraph.G, pos, with_labels=True, font_weight='bold')
@@ -130,8 +126,6 @@ class TestSum(unittest.TestCase):
         # formatted_edge_labels = NewGraph.get_edge_labels()
         # nx.draw_networkx_edge_labels(NewGraph.G,pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
         # plt.show()
-
-
 
 if __name__ == '__main__':
     unittest.main()
