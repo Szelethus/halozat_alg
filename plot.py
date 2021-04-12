@@ -12,6 +12,8 @@ import time
 def clear_edge_colors(graph):
     for u, v in graph.edges():
         graph[u][v]['color'] = 'black'
+        graph.nodes[u]['color'] = 'lightblue'
+        graph.nodes[v]['color'] = 'lightblue'
 
 def find_next_edge(port):
     next_edge = [port.n1, port.n2]
@@ -19,18 +21,23 @@ def find_next_edge(port):
     return next_edge
 
 def color_forward_edge(graph, from_, to):
-    graph.edges[from_, to]['color'] = 'red'
+    graph.edges[from_, to]['color'] = 'green'
+    graph.nodes[from_]['color'] = 'green'
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 
 def color_reverse_edge(graph, from_, to):
     graph.edges[from_, to]['color'] = 'orange'
+    graph.nodes[from_]['color'] = 'orange'
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 
 def draw_window(graph, game_screen, fig, Graph):
-    edges = graph.edges()
-    colors = [graph[u][v]['color'] for u, v in edges]
+    edge_colors = [graph[u][v]['color'] for u, v in graph.edges()]
+    print(edge_colors)
+    for n in graph.nodes():
+        print(graph.nodes[n]['color'])
+    node_colors = [graph.nodes[n]['color'] for n in graph.nodes()]
     fig.clf()
     my_pos = nx.spring_layout(graph, seed=100)
     nx.draw_networkx_nodes(graph, my_pos)
@@ -39,7 +46,7 @@ def draw_window(graph, game_screen, fig, Graph):
     formatted_edge_labels = Graph.get_edge_labels()
     nx.draw_networkx_edge_labels(graph,my_pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
     nx.draw_networkx_labels(graph, pos=my_pos)
-    nx.draw(graph, edge_color=colors, pos=my_pos)
+    nx.draw(graph, node_color=node_colors, edge_color=edge_colors, pos=my_pos)
     plt.tight_layout()
     canvas = agg.FigureCanvasAgg(fig)
     canvas.draw()
