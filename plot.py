@@ -21,8 +21,8 @@ def find_next_edge(port):
     return next_edge
 
 def color_forward_edge(graph, from_, to):
-    graph.edges[from_, to]['color'] = 'red'
-    graph.nodes[from_]['color'] = 'red'
+    graph.edges[from_, to]['color'] = 'green'
+    graph.nodes[from_]['color'] = 'green'
     print("The color of the edge:")
     print(graph.edges[from_, to]['color'])
 

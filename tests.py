@@ -86,7 +86,8 @@ class TestSum(unittest.TestCase):
             dict(n1=2, p1=1, n2=3, p2=0)
         ])
         robot_pos = 0
-        NewGraph.encode(INSTANCE_ORACLE, robot_pos)
+        # NewGraph.encode(INSTANCE_ORACLE, robot_pos)
+        NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos)
         NewGraph.print_encoding_info()
 
         # Ideally, we should check structural equivalence.
@@ -110,7 +111,8 @@ class TestSum(unittest.TestCase):
         NewGraph.get_edge_labels()
 
         if oracle_type == 'MAP_ORACLE':
-            f_tours = NewGraph.get_map_oracle_f_tours()
+            # f_tours = NewGraph.get_map_oracle_f_tours()
+            f_tours = NewGraph.map_oracle_with_plotting()
             # print(f_tours)
 
         pos = nx.spring_layout(NewGraph.G)
