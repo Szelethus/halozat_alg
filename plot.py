@@ -11,14 +11,20 @@ import time
 
 def initialize_colors(graph):
     for u, v in graph.edges():
-        graph[u][v]['color'] = 'black'
+        graph[u][v]['color'] = 'grey'
         graph[u][v]['width'] = 0.3
+        graph[u][v]['visit_count'] = 0
         graph.nodes[u]['color'] = 'lightblue'
         graph.nodes[v]['color'] = 'lightblue'
         
 def clear_edge_colors(graph):
     for u, v in graph.edges():
-        graph[u][v]['color'] = 'black'
+        if graph[u][v]['visit_count'] == 1:
+            graph[u][v]['color'] = 'grey'
+        elif graph[u][v]['visit_count'] == 2:
+            graph[u][v]['color'] = 'black'
+        else:
+            graph[u][v]['color'] = 'grey'
         if graph[u][v]['width'] == 5:
             graph[u][v]['width'] = 3
 
@@ -30,6 +36,7 @@ def find_next_edge(port):
 def color_forward_edge(graph, from_, to):
     graph.edges[from_, to]['color'] = 'green'
     graph.edges[from_, to]['width'] = 5
+    graph.edges[from_, to]['visit_count'] = graph.edges[from_, to]['visit_count'] + 1
     graph.nodes[from_]['color'] = 'green'
     #print("The color of the edge:")
     #print(graph.edges[from_, to]['color'])

@@ -97,4 +97,7 @@ pos = {
 }
 NewGraph.print_encoding_info()
 print(NewGraph.encode(INSTANCE_ORACLE, 0))
-NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos, pos)
+#NewGraph.encode_with_plotting(INSTANCE_ORACLE, robot_pos, pos)
+
+f_tours = NewGraph.get_map_oracle_f_tours()
+NewGraph.map_oracle_robot(f_tours, 10, pos)
