@@ -254,13 +254,13 @@ class Graph:
         window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
         screen = pygame.display.get_surface()
         running = True
+        plot.initialize_colors(self.G)
         while running:
             # if the user wants to close the window after the algorithm is finished
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                     
-            plot.initialize_colors(self.G)
             for u, v, d in edges:
                         # if the user wants to close the window during the algorithm is running
                 for event in pygame.event.get():
@@ -288,16 +288,20 @@ class Graph:
                         self.ports.append(get_binary(self.get_port_to(v, u), bit))
                         self.ports_decimal.append(self.get_port_to(v, u))
                         plot.color_reverse_edge(self.G, v, u)
+                    else:
+                        continue
                 
                 plot.draw_window(self.G, screen, fig, self, pos)
                 
                 pygame.display.flip()
-                time.sleep(1)
+                time.sleep(0.3)
+            #running = False
 
             plot.clear_edge_colors(self.G)
-            plot.draw_window(self.G, screen, fig, self, None)
+            plot.draw_window(self.G, screen, fig, self, pos)
             pygame.display.flip()
-        pygame.quit()
+
+        #pygame.quit()
 
         return ''.join(str(x) for x in self.path + [0] + self.ports)
 
