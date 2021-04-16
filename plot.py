@@ -61,7 +61,7 @@ def draw_window(graph, game_screen, fig, Graph, pos):
     nx.draw_networkx_nodes(graph, my_pos)
     nx.draw_networkx_edges(graph, my_pos)
     node_labels = nx.get_node_attributes(graph, 'id')
-    formatted_edge_labels = Graph.get_edge_labels()
+    formatted_edge_labels = Graph.G.get_edge_labels()
 
     nx.draw_networkx_edge_labels(graph,my_pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
     nx.draw_networkx_labels(graph, pos=my_pos)

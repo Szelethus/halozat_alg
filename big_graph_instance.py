@@ -70,8 +70,8 @@ Graph.init_with_dicts(24, [
 
 robot_pos = 0
 
-map_oracle = Oracle(MAP_ORACLE, Graph)
-map_oracle.encode(robot_pos)
+instance_oracle = Oracle(INSTANCE_ORACLE, Graph)
+instance_oracle.encode(robot_pos)
 pos = {
     0  : ( 20, 100),
     1  : ( 20, 000),
@@ -98,9 +98,7 @@ pos = {
     22 : (530, 350),
     23 : (530, 250)
 }
-map_oracle.print_encoding_info(0)
-print(map_oracle.encode(0))
-#Graph.encode_with_plotting(INSTANCE_ORACLE, robot_pos, pos)
+instance_oracle.print_encoding_info(0)
+print(instance_oracle.encode(0))
+instance_oracle.encode_with_plotting(robot_pos, pos)
 
-f_tours = Graph.get_map_oracle_f_tours()
-Graph.map_oracle_robot(f_tours, 10, pos)
