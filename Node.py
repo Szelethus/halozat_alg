@@ -108,14 +108,14 @@ class Graph:
                 continue
             if visited_nodes != self.G.number_of_nodes():
                 if d == "forward":
-                    print('going from node', u, 'to', v, 'in', d)
+                    #print('going from node', u, 'to', v, 'in', d)
                     path.append(1)
                     node_path.append(v)
                     visited_nodes += 1
                     ports.append(get_binary(self.get_port_to(u, v), bit))
                     ports_decimal.append(self.get_port_to(u, v))
                 elif d == 'reverse':
-                    print('going from node', v, 'to', u, 'in', d)
+                    #print('going from node', v, 'to', u, 'in', d)
                     path.append(0)
                     node_path.append(u)
                     ports.append(get_binary(self.get_port_to(v, u), bit))
@@ -255,6 +255,21 @@ class Graph:
             print(ports + ports[::-1])
             f_tours.append(ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
+
+    def quick_display_graph(self):
+        pygame.init()
+        fig = pylab.figure(figsize=[16, 8], dpi=100)
+        window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
+        screen = pygame.display.get_surface()
+        plot.initialize_colors(self.G)
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            plot.draw_window(self.G, screen, fig, self, None)
+            pygame.display.flip()
     
     def encode_with_plotting(self, oracle_type, robot_pos, pos):
         if oracle_type == INSTANCE_ORACLE:
