@@ -18,13 +18,7 @@ def get_binary(x, n=0):
 
 class Graph:
     def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.path = []
-        self.node_path = []
-        self.ports = []
-        self.ports_decimal = []
+        return
 
     def init_with_dicts(self, node_count, edges_with_ports):
         self.G = nx.Graph()
@@ -94,13 +88,19 @@ class Graph:
             return data['p2']
 
     def encode(self, oracle_type, robot_pos):
+        spanning_tree = minimum_spanning_tree(self.G)
+
         if oracle_type == INSTANCE_ORACLE:
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), robot_pos)
+            edges = nx.dfs_labeled_edges(spanning_tree, robot_pos)
         else:
             # Lets not make it random, otherwise it wouldn't be deterministic
-            edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
+            edges = nx.dfs_labeled_edges(spanning_tree, 0)
 
-        self.reset()
+        path = []
+        node_path = []
+        ports = []
+        ports_decimal = []
+
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
         for u, v, d in edges:
@@ -108,17 +108,21 @@ class Graph:
                 continue
             if visited_nodes != self.G.number_of_nodes():
                 if d == "forward":
-                    self.path.append(1)
-                    self.node_path.append(u)
+                    print('going from node', u, 'to', v, 'in', d)
+                    path.append(1)
+                    node_path.append(v)
                     visited_nodes += 1
-                    self.ports.append(get_binary(self.get_port_to(u, v), bit))
-                    self.ports_decimal.append(self.get_port_to(u, v))
+                    ports.append(get_binary(self.get_port_to(u, v), bit))
+                    ports_decimal.append(self.get_port_to(u, v))
                 elif d == 'reverse':
-                    self.path.append(0)
-                    self.node_path.append(v)
-                    self.ports.append(get_binary(self.get_port_to(v, u), bit))
-                    self.ports_decimal.append(self.get_port_to(v, u))
-        return ''.join(str(x) for x in self.path + [0] + self.ports)
+                    print('going from node', v, 'to', u, 'in', d)
+                    path.append(0)
+                    node_path.append(u)
+                    ports.append(get_binary(self.get_port_to(v, u), bit))
+                    ports_decimal.append(self.get_port_to(v, u))
+        encoded_route = ''.join(str(x) for x in path + [0] + ports)
+
+        return encoded_route, path, node_path, ports, ports_decimal, spanning_tree
 
     # Find the bit deparating the structure of the graph and the port numbers.
     #
@@ -203,11 +207,15 @@ class Graph:
     def print_graph(self):
         print(self.G.edges(data=True))
 
-    def print_encoding_info(self):
-        print('Structure of the graph (1:forward, 0:reverse): ', self.path)
-        print('DFS sequence of nodes: ', self.node_path)
-        print('DFS sequence of ports: ', self.ports)
-        print('DFS sequence of ports in decimal: ', self.ports_decimal)
+    def print_encoding_info(self, oracle_type, robot_pos):
+        encoded_route, path, node_path, ports, ports_decimal, _ = self.encode(oracle_type, robot_pos)
+
+        print('---=== Encoding for', 'Map oracle' if oracle_type == MAP_ORACLE else 'Instance oracle', ', robot starting position at node', robot_pos, '===---')
+        print('Code generated for graph: ', encoded_route)
+        print('Structure of the graph (1:forward, 0:reverse): ', path)
+        print('DFS sequence of nodes: ', node_path)
+        print('DFS sequence of ports: ', ports)
+        print('DFS sequence of ports in decimal: ', ports_decimal)
 
     def get_edge_labels(self):
         edge_labels = {}
@@ -255,9 +263,13 @@ class Graph:
             # Lets not make it random, otherwise it wouldn't be deterministic
             edges = nx.dfs_labeled_edges(minimum_spanning_tree(self.G), 1)
 
-        self.reset()
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
+
+        path = []
+        node_path = []
+        ports = []
+        ports_decimal = []
 
         pygame.init()
         fig = pylab.figure(figsize=[16, 8], dpi=100)
