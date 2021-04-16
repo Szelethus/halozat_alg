@@ -1,6 +1,6 @@
 import math
 import pygame
-import plot
+import Plot
 import networkx as nx
 import pylab
 from pygame.locals import *
@@ -66,7 +66,7 @@ class Oracle:
                     node_path.append(u)
                     ports.append(get_binary(self.G.get_port_to(v, u), bit))
                     ports_decimal.append(self.G.get_port_to(v, u))
-        encoded_route = ''.join(str(x) for x in path + [0] + ports)
+        encoded_route = str(self.oracle_type) + ''.join(str(x) for x in path + [0] + ports)
 
         return encoded_route, path, node_path, ports, ports_decimal, spanning_tree
 
@@ -90,30 +90,18 @@ class Oracle:
         visited_nodes = 0
         bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
 
-        path = []
-        node_path = []
-        ports = []
-        ports_decimal = []
-
-        pygame.init()
-        fig = pylab.figure(figsize=[16, 8], dpi=100)
-        window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
-        screen = pygame.display.get_surface()
+        plot = Plot()
         running = True
         plot.initialize_colors(self.G)
         while running:
-            # if the user wants to close the window after the algorithm is finished
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+            if plot.has_quit():
+                running = False
+                break
                     
             for u, v, d in edges:
-                # if the user wants to close the window during the algorithm is running
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                if running == False:
-                    pygame.quit()
+                if plot.has_quit():
+                    running = False
+                    break
 
                 # color only the currently used edge
                 plot.clear_edge_colors(self.G)

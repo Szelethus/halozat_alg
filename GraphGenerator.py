@@ -1,6 +1,5 @@
 import math
 import pygame
-import plot
 import pylab
 from pygame.locals import *
 import time
@@ -15,7 +14,6 @@ def get_binary(x, n=0):
 
 
 class GraphGenerator:
-    
     def find_edge(self, p1, p2, robot_pos):
         i = 0
         for u, v, edge in self.G.edges.data(True):

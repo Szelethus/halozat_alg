@@ -106,6 +106,7 @@ class TestSum(unittest.TestCase):
         #NewGraph.quick_display_graph()
         #TODO: check port equivalence
         assert nx.is_isomorphic(GraphToEncode.G, NewGraph.G) #, edge_match=edge_attr_equivalence)
+
     def test_map_oracle(self):
         NewGraph = Graph()
         NewGraph.init_with_dicts(5, [

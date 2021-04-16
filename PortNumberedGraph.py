@@ -2,7 +2,7 @@ import networkx as nx
 from networkx import minimum_spanning_tree
 import math
 import pygame
-import plot
+import Plot
 import pylab
 from pygame.locals import *
 import time
@@ -69,6 +69,14 @@ class PortNumberedGraph(nx.Graph):
             return data['p1']
         else:
             return data['p2']
+
+    def get_destination_of_port(self, from_, port):
+        for edge in self.edges(data=True):
+            if edge['n1'] == from_ and edge['p1'] == port:
+                return edge['n2']
+            elif edge['n2'] == from_ and edge['p2'] == port:
+                return edge['n1']
+        return -1
 
     def print_graph(self):
         print('Nodes', self.nodes(data=True))
