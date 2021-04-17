@@ -101,7 +101,6 @@ pos = {
     23 : (530, 250)
 }
 instance_oracle.print_encoding_info(robot_pos)
-encoded_route, path, node_path, ports, ports_decimal, _ = instance_oracle.encode(robot_pos)
-robot = Robot(encoded_route)
+robot = Robot(instance_oracle.encode(robot_pos))
 plot = Plot(Graph, pos)
 plot.step_by_step_display(robot.traverse(Graph, robot_pos).edge_exploration_orders)

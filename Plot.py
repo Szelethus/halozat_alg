@@ -19,6 +19,8 @@ class Plot:
         self.window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
         self.screen = pygame.display.get_surface()
 
+        self.prev_backtrack_node = -1
+
     # if the user wants to close the window after the algorithm is finished
     def has_quit(self):
         for event in pygame.event.get():
@@ -29,44 +31,34 @@ class Plot:
 
     def initialize_colors(self):
         for u, v in self.graph.edges():
-            self.graph[u][v]['color'] = 'grey'
+            self.graph[u][v]['color'] = 'black'
             self.graph[u][v]['width'] = 0.3
-            self.graph[u][v]['visit_count'] = 0
             self.graph.nodes[u]['color'] = 'lightblue'
             self.graph.nodes[v]['color'] = 'lightblue'
             
     def clear_edge_colors(self):
         for u, v in self.graph.edges():
-            if self.graph[u][v]['visit_count'] == 1:
-                self.graph[u][v]['color'] = 'grey'
-            elif self.graph[u][v]['visit_count'] == 2:
-                self.graph[u][v]['color'] = 'black'
-            else:
-                self.graph[u][v]['color'] = 'grey'
+            self.graph[u][v]['color'] = 'black'
             if self.graph[u][v]['width'] == 5:
                 self.graph[u][v]['width'] = 3
 
     def color_forward_edge(self, from_, to):
         self.graph.edges[from_, to]['color'] = 'green'
         self.graph.edges[from_, to]['width'] = 5
-        self.graph.edges[from_, to]['visit_count'] += 1
         self.graph.nodes[from_]['color'] = 'green'
-        #print("The color of the edge:")
-        #print(graph.edges[from_, to]['color'])
 
     def color_reverse_edge(self, from_, to):
         self.graph.edges[from_, to]['color'] = 'orange'
         self.graph.edges[from_, to]['width'] = 5
         self.graph.nodes[from_]['color'] = 'orange'
-        #print("The color of the edge:")
-        #print(graph.edges[from_, to]['color'])
 
     def color_backtrack_edge(self, from_, to):
-        self.graph.edges[from_, to]['color'] = 'orange'
+        self.graph.edges[from_, to]['color'] = 'red'
         self.graph.edges[from_, to]['width'] = 5
-        self.graph.nodes[from_]['color'] = 'orange'
-        #print("The color of the edge:")
-        #print(graph.edges[from_, to]['color'])
+        self.graph.nodes[from_]['color'] = 'red'
+        if self.prev_backtrack_node != -1:
+            self.graph.nodes[self.prev_backtrack_node]['color'] = 'lightblue'
+        self.prev_backtrack_node = from_
 
     def draw_window(self, texts):
         edge_colors = [self.graph[u][v]['color'] for u, v in self.graph.edges()]
@@ -115,6 +107,7 @@ class Plot:
                 if self.has_quit():
                     running = False
                     break
+                idx += 1
 
                 text = ['Port sequence: ' + ''.join(str(x) for x in port_sequence),
                         'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order[:idx]),
@@ -127,10 +120,8 @@ class Plot:
                 self.clear_edge_colors()
                 if direction == "forward":
                     self.color_forward_edge(from_, to)
-                    idx += 1
                 elif direction == 'reverse':
                     self.color_reverse_edge(from_, to)
-                    idx += 1
                 elif direction == 'backtrack':
                     self.color_backtrack_edge(from_, to)
                     text[1] += ' (backtracking to start...)'
@@ -139,8 +130,7 @@ class Plot:
 
                 self.draw_window(text)
                 pygame.display.flip()
-                time.sleep(0.3)
-            text[1] += str(port_taken)
+                #time.sleep(0.3)
         while running:
             if self.has_quit():
                 running = False

@@ -4,14 +4,7 @@ import pylab
 from pygame.locals import *
 import time
 import random
-
-MAP_ORACLE = 0
-INSTANCE_ORACLE = 1
-
-
-def get_binary(x, n=0):
-    return format(x, 'b').zfill(n)
-
+from PortNumberedGraph import PortNumberedGraph
 
 class GraphGenerator:
     def find_edge(self, p1, p2, robot_pos):
@@ -79,8 +72,8 @@ class GraphGenerator:
             edge_s.append([n1, p1, n2, p2])'''
 
         # print(edge_s)
-
-        random_graph = 'self.init_with_dicts(' + str(number_of_node) + ', ['
+        G = PortNumberedGraph()
+        random_graph = 'G.init_with_dicts(' + str(number_of_node) + ', ['
 
         num_of_edges = len(edge_s)
         # print(num_of_edges)
@@ -98,5 +91,5 @@ class GraphGenerator:
                                                                                                      ' n2=' + str(
             edge_s[k][2]) + ', p2=' + str(edge_s[k][3]) + ')])'
 
-        G = exec(random_graph)
+        exec(random_graph)
         return G

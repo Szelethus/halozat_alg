@@ -32,7 +32,7 @@ class Oracle:
 
         return True
 
-    def encode(self, robot_pos):
+    def encode_with_stats(self, robot_pos):
         spanning_tree = nx.minimum_spanning_tree(self.G)
 
         if self.oracle_type == INSTANCE_ORACLE:
@@ -69,8 +69,12 @@ class Oracle:
 
         return encoded_route, path, node_path, ports, ports_decimal, spanning_tree
 
+    def encode(self, robot_pos):
+        encoded_route, _, _, _, _, _ = self.encode_with_stats(robot_pos)
+        return encoded_route
+
     def print_encoding_info(self, robot_pos):
-        encoded_route, path, node_path, ports, ports_decimal, _ = self.encode(robot_pos)
+        encoded_route, path, node_path, ports, ports_decimal, _ = self.encode_with_stats(robot_pos)
 
         print('---=== Encoding for', 'Map oracle' if self.oracle_type == MAP_ORACLE else 'Instance oracle', ', robot starting position at node', robot_pos, '===---')
         print('Code generated for graph: ', encoded_route)

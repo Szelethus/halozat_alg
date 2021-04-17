@@ -23,7 +23,6 @@ class PortNumberedGraph(nx.Graph):
             ports = self.nodes(data=True)[edge_info['n2']]['ports']
             ports.append(ports[-1] + 1)
 
-        self.print_graph()
         # Connect these ports with edges.
         for e in edges_with_ports:
             self.add_edge_port(e['n1'], e['p1'], e['n2'], e['p2'])
@@ -90,17 +89,3 @@ class PortNumberedGraph(nx.Graph):
                                  edge_labels}  # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
 
         return formatted_edge_labels
-    
-    def find_edge(self, p1, p2, robot_pos):
-        i = 0
-        for u, v, edge in self.edges.data(True):
-            if robot_pos == u:
-                if self.get_port_to(u, v) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
-                    return u, v
-            elif robot_pos == v:
-                if self.get_port_to(v, u) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
-                    return u, v
-
-            i += 1
-        if i == len(self.edges):
-            return i, i

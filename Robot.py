@@ -9,8 +9,18 @@ from PortNumberedGraph import PortNumberedGraph
 from Oracle import MAP_ORACLE, INSTANCE_ORACLE
 
 class ExploredPorts:
-    # TODO: Are we sure this route is correct on the original graph as well?
     def __init__(self, original_graph, starting_pos):
+        # A list of tuples describing the ports the robot has taken so far in
+        # the following structure:
+        #   (<f_tour>, (node_from, node_to, port, direction))
+        # Where the
+        #   * f_tour is as described in the article,
+        #   * port is the port to be taken from node_from to reach node_to
+        #   * direction is one of the following:
+        #     - forward
+        #     - reverse
+        #     - backtrack, if the exploration failed and the robot is in the 
+        #     process of going back to its starting point.
         self.edge_exploration_orders = []
         self.backtrack = []
         self.original_graph = original_graph
@@ -182,8 +192,8 @@ class Robot:
         
         for tour in f_tours:
             if explored_ports.try_explore_port_sequence(tour):
-                print('Found sequence:', tour)
+                #print('Found sequence:', tour)
                 return explored_ports
             else:
-                print('Failed sequence:', tour)
+                #print('Failed sequence:', tour)
         assert False, "Failed to explore the graph with a map oracle advice!"
