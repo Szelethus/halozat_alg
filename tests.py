@@ -118,7 +118,8 @@ class TestSum(unittest.TestCase):
 
         robot = Robot(map_oracle.encode(robot_pos))
 
-        robot.traverse(NewGraph, robot_pos)
+        print(robot.traverse(NewGraph, robot_pos))
+
 
     def test_random_graph(self):
         graph_generator = GraphGenerator()

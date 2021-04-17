@@ -210,6 +210,4 @@ class Robot:
             if explored_ports.try_explore_port_sequence(tour):
                 #print('Found sequence:', tour)
                 return explored_ports
-            else:
-                #print('Failed sequence:', tour)
         assert False, "Failed to explore the graph with a map oracle advice!"
