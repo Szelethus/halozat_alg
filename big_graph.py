@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import Oracle, MAP_ORACLE, INSTANCE_ORACLE
 from Robot import Robot
+from Plot import Plot
 
 Graph = PortNumberedGraph()
 Graph.init_with_dicts(24, [
@@ -100,5 +101,6 @@ pos = {
 }
 map_oracle.print_encoding_info(robot_pos)
 encoded_route, path, node_path, ports, ports_decimal, _ = map_oracle.encode(robot_pos)
-robot = Robot(encoded_route, Graph, robot_pos)
-robot.traverse()
+robot = Robot(encoded_route)
+plot = Plot(Graph, pos)
+plot.step_by_step_display(robot.traverse(Graph, robot_pos).edge_exploration_orders)

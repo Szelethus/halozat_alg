@@ -1,6 +1,5 @@
 import math
 import pygame
-from Plot import Plot
 import pylab
 from pygame.locals import *
 import time
@@ -9,12 +8,50 @@ import networkx as nx
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MAP_ORACLE, INSTANCE_ORACLE
 
-class Robot:
-    # TODO: We should construct our own graph, but traverse the original.
-    def __init__(self, code, original_graph, starting_pos):
-        self.init_with_decode(code)
+class ExploredPorts:
+    # TODO: Are we sure this route is correct on the original graph as well?
+    def __init__(self, original_graph, starting_pos):
+        self.edge_exploration_orders = [[]]
+        self.backtrack = []
         self.original_graph = original_graph
         self.current_node = starting_pos
+
+    def try_take_port(self, port):
+        to = self.original_graph.get_destination_of_port(self.current_node, port)
+        if (to == -1):
+            return False
+
+        backtrack_port = self.original_graph.get_port_to(to, self.current_node)
+
+        if len(self.backtrack) > 0 and port == self.backtrack[-1]:
+            self.edge_exploration_orders[-1].append((self.current_node, to, 'reverse'))
+            self.current_node = to
+            self.backtrack.pop()
+        else:
+            self.edge_exploration_orders[-1].append((self.current_node, to, 'forward'))
+            self.current_node = to
+            self.backtrack.append(backtrack_port)
+
+        return True
+
+    def track_back_to_start(self):
+        while len(self.backtrack) > 0:
+            port = self.backtrack[-1]
+            if not self.try_take_port(port):
+                assert False, "Failed to track back to start!"
+        self.edge_exploration_orders.append([])
+
+    def try_explore_port_sequence(self, port_sequence):
+        for port in port_sequence:
+            if not self.try_take_port(port):
+                print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
+                self.track_back_to_start()
+                return False
+        return True
+
+class Robot:
+    def __init__(self, code):
+        self.init_with_decode(code)
 
     # Find the bit deparating the structure of the graph and the port numbers.
     #
@@ -63,6 +100,8 @@ class Robot:
         # before that is the parent of the last element, and so on.
         parents = []
 
+        self.instance_oracle_tour = []
+
         while structure_idx < halfway_point - 1:
             structure_bit = code[structure_idx]
             structure_idx = structure_idx + 1
@@ -71,6 +110,7 @@ class Robot:
             # "going down", and 'p2' the port "going up".
             port_word = code[port_idx: port_idx + port_length]
             port = int(port_word, 2)
+            self.instance_oracle_tour.append(port)
             port_idx = port_idx + port_length
 
             # We finished parsing the structure of the graph. This can only
@@ -98,18 +138,21 @@ class Robot:
         assert port_idx == len(code), "Failed to read port numbers! Faulty code?"
         assert nx.is_tree(self.G), "Failed to construct a tree out of the code!"
 
-    def traverse(self):
+    def traverse(self, original_graph, starting_pos):
         if self.oracle_type == INSTANCE_ORACLE:
-            self.traverse_instance_oracle
+            return self.traverse_instance_oracle(original_graph, starting_pos)
         else:
             f_tours = self.get_map_oracle_f_tours()
-            self.map_oracle_robot(f_tours)
+            return self.traverse_map_oracle(original_graph, starting_pos, f_tours)
 
-    def traverse_instance_oracle(self):
+    def traverse_instance_oracle(self, original_graph, starting_pos):
         assert self.oracle_type == INSTANCE_ORACLE
-        steps = []
-        
+        explored_ports = ExploredPorts(original_graph, starting_pos)
 
+        if not explored_ports.try_explore_port_sequence(self.instance_oracle_tour):
+            assert False, "Failed to explore the graph with a instane oracle advice!"
+        return explored_ports
+        
     def get_map_oracle_f_tours(self):
         assert self.oracle_type == MAP_ORACLE
         f_tours = []
@@ -133,75 +176,14 @@ class Robot:
             f_tours.append(ports + ports_reverse[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
 
-    def map_oracle_robot(self, f_tours):
-        ports_taken = []
-        backtrack = []
-
-        running = True
-        found = False
-        plot = Plot()
-        plot.initialize_colors(self.G)
-        while running:
-            if plot.has_quit():
-               running = False
-               break;
-
-            if found == False:
-                for tour in f_tours:
-                    f_tour_idx = 0
-                    for tour_idx in range(len(tour)):
-                        if plot.has_quit():
-                           running = False
-                           break;
-
-                        port = tour[tour_idx]
-                        to = self.G.get_destination_of_port(self.current_node, port)
-                        if (to == -1):
-                            print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
-                            break
-
-                        ports_taken.append(port)
-                        backtrack_port = self.G.get_port_to(to, self.current_node)
-
-                        # color only the currently used edge
-                        plot.clear_edge_colors(self.G)
-
-                        if len(backtrack) > 0 and port == backtrack[-1]:
-                            plot.color_reverse_edge(self.G, self.current_node, to)
-                            self.current_node = to
-                            backtrack.pop()
-                        else:
-                            plot.color_forward_edge(self.G, self.current_node, to)
-                            self.current_node = to
-                            backtrack.append(backtrack_port)
-
-                        plot.draw_window(self.G, None)
-
-                        pygame.display.flip()
-                        #time.sleep(0.3)
-
-                        f_tour_idx += 1
-                    if f_tour_idx == len(tour):
-                        print('Found')
-                        found = True
-                        break
-                    else:
-                        while len(backtrack) > 0:
-                            port = backtrack.pop()
-                            to = self.G.get_destination_of_port(self.current_node, port)
-
-                            plot.clear_edge_colors(self.G)
-                            plot.color_reverse_edge(self.G, self.current_node, to)
-
-                            self.current_node = to
-
-                            plot.draw_window(self.G, None)
-                            pygame.display.flip()
-                            
-                        plot.initialize_colors(self.G)
-
-            plot.clear_edge_colors(self.G)
-            plot.draw_window(self.G, None)
-            pygame.display.flip()
-            running = False
-        pygame.quit()
+    def traverse_map_oracle(self, original_graph, starting_pos, f_tours):
+        assert self.oracle_type == MAP_ORACLE
+        explored_ports = ExploredPorts(original_graph, starting_pos)
+        
+        for tour in f_tours:
+            if explored_ports.try_explore_port_sequence(tour):
+                print('Found sequence:', tour)
+                return explored_ports
+            else:
+                print('Failed sequence:', tour)
+        assert False, "Failed to explore the graph with a map oracle advice!"
