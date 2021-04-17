@@ -116,6 +116,7 @@ class Robot:
 
         for root in self.G.nodes():
             ports = []
+            ports_reverse = []
             visited_nodes = 0
             edges = nx.dfs_labeled_edges(nx.minimum_spanning_tree(self.G), root)
             for u, v, d in edges:
@@ -125,15 +126,17 @@ class Robot:
                     if d == "forward":
                         visited_nodes += 1
                         ports.append(self.G.get_port_to(u, v))
+                        ports_reverse.append(self.G.get_port_to(v, u))
                     elif d == 'reverse':
                         ports.append(self.G.get_port_to(v, u))
-            print(ports + ports[::-1])
-            f_tours.append(ports + ports[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
+                        ports_reverse.append(self.G.get_port_to(u, v))
+            print(ports + ports_reverse[::-1])
+            f_tours.append(ports + ports_reverse[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
 
     def map_oracle_robot(self, f_tours):
-        f_tour_idx = 0
         ports_taken = []
+        backtrack = []
 
         running = True
         found = False
@@ -147,36 +150,40 @@ class Robot:
             if found == False:
                 for tour in f_tours:
                     f_tour_idx = 0
-                    for port in tour:
+                    for tour_idx in range(len(tour)):
                         if plot.has_quit():
                            running = False
                            break;
-                        if running == False:
-                            pygame.quit()
 
+                        port = tour[tour_idx]
+                        print(tour[tour_idx:])
                         to = self.G.get_destination_of_port(self.current_node, port)
                         if (to == -1):
+                            print(self.current_node, port)
                             print('Cannot proceed ')
                             break
 
                         ports_taken.append(port)
+                        backtrack_port = self.G.get_port_to(to, self.current_node)
 
                         # color only the currently used edge
                         plot.clear_edge_colors(self.G)
 
-                        if u == self.current_node:
-                            self.current_node = v
-                            plot.color_forward_edge(self.G, u, v)
-                            print(u, v)
-                        elif v == self.current_node:
-                            self.current_node = u
-                            plot.color_reverse_edge(self.G, v, u)
-                            print(v, u)
+                        if len(backtrack) > 0 and port == backtrack[-1]:
+                            plot.color_reverse_edge(self.G, self.current_node, to)
+                            self.current_node = to
+                            backtrack.pop()
+                            print(backtrack_port, port, backtrack)
+                        else:
+                            plot.color_forward_edge(self.G, self.current_node, to)
+                            self.current_node = to
+                            backtrack.append(backtrack_port)
+                            print(backtrack_port, port, backtrack)
 
-                        plot.draw_window(self.G, screen, fig, self, fig_pos)
+                        plot.draw_window(self.G, None)
 
                         pygame.display.flip()
-                        time.sleep(0.3)
+                        #time.sleep(0.3)
 
                         f_tour_idx += 1
                     if f_tour_idx == len(tour):
@@ -185,17 +192,24 @@ class Robot:
                         found = True
                         break
                     else:
-                        while len(ports_taken) != 1:
+                        while len(backtrack) > 0:
+                            port = backtrack.pop()
+                            print(backtrack)
+                            to = self.G.get_destination_of_port(self.current_node, port)
+                            print('from', self.current_node, 'to', to, 'on port', port)
+
                             plot.clear_edge_colors(self.G)
-                            u, v = self.find_edge(ports_taken[-1], ports_taken[-2], self.current_node)
-                            plot.color_reverse_edge(self.G, v, u)
+                            plot.color_reverse_edge(self.G, self.current_node, to)
+
+                            self.current_node = to
+
                             plot.draw_window(self.G, None)
                             pygame.display.flip()
                             
                         plot.initialize_colors(self.G)
 
-
             plot.clear_edge_colors(self.G)
             plot.draw_window(self.G, None)
             pygame.display.flip()
+            running = False
         pygame.quit()

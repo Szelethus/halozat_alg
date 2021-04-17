@@ -11,12 +11,12 @@ import time
 class Plot:
     def __init__(self):
         pygame.init()
-        fig = pylab.figure(figsize=[16, 8], dpi=100)
-        window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
-        screen = pygame.display.get_surface()
+        self.fig = pylab.figure(figsize=[16, 8], dpi=100)
+        self.window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
+        self.screen = pygame.display.get_surface()
 
     # if the user wants to close the window after the algorithm is finished
-    def has_quit():
+    def has_quit(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -66,7 +66,7 @@ class Plot:
         edge_colors = [graph[u][v]['color'] for u, v in graph.edges()]
         edge_widths = [graph[u][v]['width'] for u, v in graph.edges()]
         node_colors = [graph.nodes[n]['color'] for n in graph.nodes()]
-        fig.clf()
+        self.fig.clf()
 
         if pos == None:
             my_pos = nx.spring_layout(graph, seed=100)
@@ -75,17 +75,17 @@ class Plot:
         nx.draw_networkx_nodes(graph, my_pos)
         nx.draw_networkx_edges(graph, my_pos)
         node_labels = nx.get_node_attributes(graph, 'id')
-        formatted_edge_labels = Graph.G.get_edge_labels()
+        formatted_edge_labels = graph.get_edge_labels()
 
         nx.draw_networkx_edge_labels(graph,my_pos,edge_labels=formatted_edge_labels,label_pos=0.3,font_color='red')
         nx.draw_networkx_labels(graph, pos=my_pos)
         nx.draw(graph, node_color=node_colors, edge_color=edge_colors, pos=my_pos)
         nx.draw_networkx_edges(graph, my_pos, edge_color=edge_colors, width=edge_widths)
         plt.tight_layout()
-        canvas = agg.FigureCanvasAgg(fig)
+        canvas = agg.FigureCanvasAgg(self.fig)
         canvas.draw()
         renderer = canvas.get_renderer()
         raw_data = renderer.tostring_rgb()
         size = canvas.get_width_height()
         surf = pygame.image.fromstring(raw_data, size, "RGB")
-        game_screen.blit(surf, (0, 0))
+        self.screen.blit(surf, (0, 0))

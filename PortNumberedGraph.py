@@ -71,11 +71,11 @@ class PortNumberedGraph(nx.Graph):
             return data['p2']
 
     def get_destination_of_port(self, from_, port):
-        for edge in self.edges(data=True):
-            if edge['n1'] == from_ and edge['p1'] == port:
-                return edge['n2']
-            elif edge['n2'] == from_ and edge['p2'] == port:
-                return edge['n1']
+        for _, _, data in self.edges.data():
+            if data['n1'] == from_ and data['p1'] == port:
+                return data['n2']
+            elif data['n2'] == from_ and data['p2'] == port:
+                return data['n1']
         return -1
 
     def print_graph(self):
