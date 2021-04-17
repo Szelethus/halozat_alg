@@ -11,12 +11,12 @@ from Oracle import MAP_ORACLE, INSTANCE_ORACLE
 class ExploredPorts:
     # TODO: Are we sure this route is correct on the original graph as well?
     def __init__(self, original_graph, starting_pos):
-        self.edge_exploration_orders = [[]]
+        self.edge_exploration_orders = []
         self.backtrack = []
         self.original_graph = original_graph
         self.current_node = starting_pos
 
-    def try_take_port(self, port):
+    def try_take_port(self, port, reverse_kind = 'reverse'):
         to = self.original_graph.get_destination_of_port(self.current_node, port)
         if (to == -1):
             return False
@@ -24,11 +24,11 @@ class ExploredPorts:
         backtrack_port = self.original_graph.get_port_to(to, self.current_node)
 
         if len(self.backtrack) > 0 and port == self.backtrack[-1]:
-            self.edge_exploration_orders[-1].append((self.current_node, to, port, 'reverse'))
+            self.edge_exploration_orders[-1][1].append((self.current_node, to, port, reverse_kind))
             self.current_node = to
             self.backtrack.pop()
         else:
-            self.edge_exploration_orders[-1].append((self.current_node, to, port, 'forward'))
+            self.edge_exploration_orders[-1][1].append((self.current_node, to, port, 'forward'))
             self.current_node = to
             self.backtrack.append(backtrack_port)
 
@@ -37,11 +37,11 @@ class ExploredPorts:
     def track_back_to_start(self):
         while len(self.backtrack) > 0:
             port = self.backtrack[-1]
-            if not self.try_take_port(port):
+            if not self.try_take_port(port, 'backtrack'):
                 assert False, "Failed to track back to start!"
-        self.edge_exploration_orders.append([])
 
     def try_explore_port_sequence(self, port_sequence):
+        self.edge_exploration_orders.append((port_sequence, []))
         for port in port_sequence:
             if not self.try_take_port(port):
                 print('Cannot proceed from node {} through port {}'.format(self.current_node, port))

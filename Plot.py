@@ -107,7 +107,7 @@ class Plot:
         running = True
                     
         attempts = 0
-        for edge_exploration_order in edge_exploration_orders:
+        for port_sequence, edge_exploration_order in edge_exploration_orders:
             self.initialize_colors()
             attempts += 1
             idx = 0
@@ -115,29 +115,32 @@ class Plot:
                 if self.has_quit():
                     running = False
                     break
-                idx += 1
 
-                # color only the currently used edge
-                self.clear_edge_colors()
-                if direction == "forward":
-                    self.color_forward_edge(from_, to)
-                elif direction == 'reverse':
-                    self.color_reverse_edge(from_, to)
-                elif direction == 'backtrack':
-                    self.color_backtrack_edge(from_, to)
-                else:
-                    assert False, "Unknown exploration direction: {}!".format(direction)
-
-                text = ['Port sequence: ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order),
+                text = ['Port sequence: ' + ''.join(str(x) for x in port_sequence),
                         'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order[:idx]),
                        'Current node: ' + str(from_),
                        'Port chosen: ' + str(port_taken),
                        'Next node: ' + str(to),
                        'Attempts: ' + str(attempts)]
 
+                # color only the currently used edge
+                self.clear_edge_colors()
+                if direction == "forward":
+                    self.color_forward_edge(from_, to)
+                    idx += 1
+                elif direction == 'reverse':
+                    self.color_reverse_edge(from_, to)
+                    idx += 1
+                elif direction == 'backtrack':
+                    self.color_backtrack_edge(from_, to)
+                    text[1] += ' (backtracking to start...)'
+                else:
+                    assert False, "Unknown exploration direction: {}!".format(direction)
+
                 self.draw_window(text)
                 pygame.display.flip()
                 time.sleep(0.3)
+            text[1] += str(port_taken)
         while running:
             if self.has_quit():
                 running = False
