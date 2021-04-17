@@ -130,7 +130,6 @@ class Robot:
                     elif d == 'reverse':
                         ports.append(self.G.get_port_to(v, u))
                         ports_reverse.append(self.G.get_port_to(u, v))
-            print(ports + ports_reverse[::-1])
             f_tours.append(ports + ports_reverse[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
         return f_tours
 
@@ -156,11 +155,9 @@ class Robot:
                            break;
 
                         port = tour[tour_idx]
-                        print(tour[tour_idx:])
                         to = self.G.get_destination_of_port(self.current_node, port)
                         if (to == -1):
-                            print(self.current_node, port)
-                            print('Cannot proceed ')
+                            print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
                             break
 
                         ports_taken.append(port)
@@ -173,12 +170,10 @@ class Robot:
                             plot.color_reverse_edge(self.G, self.current_node, to)
                             self.current_node = to
                             backtrack.pop()
-                            print(backtrack_port, port, backtrack)
                         else:
                             plot.color_forward_edge(self.G, self.current_node, to)
                             self.current_node = to
                             backtrack.append(backtrack_port)
-                            print(backtrack_port, port, backtrack)
 
                         plot.draw_window(self.G, None)
 
@@ -187,16 +182,13 @@ class Robot:
 
                         f_tour_idx += 1
                     if f_tour_idx == len(tour):
-                        print(tour)
                         print('Found')
                         found = True
                         break
                     else:
                         while len(backtrack) > 0:
                             port = backtrack.pop()
-                            print(backtrack)
                             to = self.G.get_destination_of_port(self.current_node, port)
-                            print('from', self.current_node, 'to', to, 'on port', port)
 
                             plot.clear_edge_colors(self.G)
                             plot.color_reverse_edge(self.G, self.current_node, to)
