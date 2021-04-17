@@ -7,20 +7,6 @@ import random
 from PortNumberedGraph import PortNumberedGraph
 
 class GraphGenerator:
-    def find_edge(self, p1, p2, robot_pos):
-        i = 0
-        for u, v, edge in self.G.edges.data(True):
-            if robot_pos == u:
-                if self.get_port_to(u, v) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
-                    return u, v
-            elif robot_pos == v:
-                if self.get_port_to(v, u) == p1 and (edge['p1'] == p2 or edge['p2'] == p2):
-                    return u, v
-
-            i += 1
-        if i == len(self.G.edges):
-            return i, i
-
     def get_random_graph(self, number_of_node):
         node_s = []
         port_s = list()

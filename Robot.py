@@ -22,17 +22,33 @@ class ExploredPorts:
         #     - backtrack, if the exploration failed and the robot is in the 
         #     process of going back to its starting point.
         self.edge_exploration_orders = []
+
+        # A list of port numbers to be followed in a reverse order to reach the
+        # starting point.
         self.backtrack = []
+
+        # The original graph -- NOT what the robot has constructed for itself.
+        # The robot is unaware of the original graph; this class is unaware of
+        # what the robot has constructed.
         self.original_graph = original_graph
+
+        # Mind that the robot doesn't know its position in the graph! From its
+        # perspective, only port numbers exist.
         self.current_node = starting_pos
 
+    # From its current position, try to make the robot go through a port.
+    # Returns false if no such port exists at the current position.
     def try_take_port(self, port, reverse_kind = 'reverse'):
         to = self.original_graph.get_destination_of_port(self.current_node, port)
         if (to == -1):
             return False
 
+        # The port we'd need to take from the 'to' node to get back to
+        # 'self.current_node'.
         backtrack_port = self.original_graph.get_port_to(to, self.current_node)
 
+        # If we're going back to the previous node, we can pop the backtrack
+        # stack.
         if len(self.backtrack) > 0 and port == self.backtrack[-1]:
             self.edge_exploration_orders[-1][1].append((self.current_node, to, port, reverse_kind))
             self.current_node = to
@@ -54,7 +70,7 @@ class ExploredPorts:
         self.edge_exploration_orders.append((port_sequence, []))
         for port in port_sequence:
             if not self.try_take_port(port):
-                print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
+                #print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
                 self.track_back_to_start()
                 return False
         return True
