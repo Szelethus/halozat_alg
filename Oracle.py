@@ -1,6 +1,5 @@
 import math
 import pygame
-import Plot
 import networkx as nx
 import pylab
 from pygame.locals import *
@@ -79,51 +78,3 @@ class Oracle:
         print('DFS sequence of nodes: ', node_path)
         print('DFS sequence of ports: ', ports)
         print('DFS sequence of ports in decimal: ', ports_decimal)
-    
-    def encode_with_plotting(self, robot_pos, pos):
-        if self.oracle_type == INSTANCE_ORACLE:
-            edges = nx.dfs_labeled_edges(nx.minimum_spanning_tree(self.G), robot_pos)
-        else:
-            # Lets not make it random, otherwise it wouldn't be deterministic
-            edges = nx.dfs_labeled_edges(nx.minimum_spanning_tree(self.G), 1)
-
-        visited_nodes = 0
-        bit = math.ceil(math.log(self.G.number_of_nodes(), 2))
-
-        plot = Plot()
-        running = True
-        plot.initialize_colors(self.G)
-        while running:
-            if plot.has_quit():
-                running = False
-                break
-                    
-            for u, v, d in edges:
-                if plot.has_quit():
-                    running = False
-                    break
-
-                # color only the currently used edge
-                plot.clear_edge_colors(self.G)
-
-                if u == v:
-                    continue
-                if visited_nodes != self.G.number_of_nodes():
-                    if d == "forward":
-                        visited_nodes += 1
-                        plot.color_forward_edge(self.G, u, v)
-                    elif d == 'reverse':
-                        plot.color_reverse_edge(self.G, v, u)
-                    else:
-                        continue
-
-                plot.draw_window(self.G, screen, fig, self, pos)
-
-                pygame.display.flip()
-                time.sleep(0.3)
-            #running = False
-
-            plot.clear_edge_colors(self.G)
-            plot.draw_window(self.G, screen, fig, self, pos)
-            pygame.display.flip()
-

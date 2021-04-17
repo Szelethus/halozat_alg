@@ -2,7 +2,6 @@ import networkx as nx
 from networkx import minimum_spanning_tree
 import math
 import pygame
-import Plot
 import pylab
 from pygame.locals import *
 import time
@@ -91,21 +90,6 @@ class PortNumberedGraph(nx.Graph):
                                  edge_labels}  # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
 
         return formatted_edge_labels
-
-    def quick_display_graph(self):
-        pygame.init()
-        fig = pylab.figure(figsize=[16, 8], dpi=100)
-        window = pygame.display.set_mode((1600, 800), DOUBLEBUF)
-        screen = pygame.display.get_surface()
-        plot.initialize_colors(self)
-
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            plot.draw_window(self, screen, fig, self, None)
-            pygame.display.flip()
     
     def find_edge(self, p1, p2, robot_pos):
         i = 0

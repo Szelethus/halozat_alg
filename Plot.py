@@ -11,6 +11,8 @@ import time
 class Plot:
     def __init__(self, graph, pos):
         pygame.init()
+        pygame.font.init()
+        self.myfont = pygame.font.SysFont('monospace', 20)
         self.graph = graph
         self.pos = pos
         self.fig = pylab.figure(figsize=[16, 8], dpi=100)
@@ -59,7 +61,14 @@ class Plot:
         #print("The color of the edge:")
         #print(graph.edges[from_, to]['color'])
 
-    def draw_window(self):
+    def color_backtrack_edge(self, from_, to):
+        self.graph.edges[from_, to]['color'] = 'orange'
+        self.graph.edges[from_, to]['width'] = 5
+        self.graph.nodes[from_]['color'] = 'orange'
+        #print("The color of the edge:")
+        #print(graph.edges[from_, to]['color'])
+
+    def draw_window(self, texts):
         edge_colors = [self.graph[u][v]['color'] for u, v in self.graph.edges()]
         edge_widths = [self.graph[u][v]['width'] for u, v in self.graph.edges()]
         node_colors = [self.graph.nodes[n]['color'] for n in self.graph.nodes()]
@@ -78,24 +87,35 @@ class Plot:
         nx.draw_networkx_labels(self.graph, pos=my_pos)
         nx.draw(self.graph, node_color=node_colors, edge_color=edge_colors, pos=my_pos)
         nx.draw_networkx_edges(self.graph, my_pos, edge_color=edge_colors, width=edge_widths)
-        plt.tight_layout()
+
+        plt.tight_layout(rect=(0.1, 0, 1, 0.9))
         canvas = agg.FigureCanvasAgg(self.fig)
         canvas.draw()
         renderer = canvas.get_renderer()
         raw_data = renderer.tostring_rgb()
         size = canvas.get_width_height()
+
         surf = pygame.image.fromstring(raw_data, size, "RGB")
         self.screen.blit(surf, (0, 0))
+        y = 0
+        for text in texts:
+            textsurface = self.myfont.render(text, False, (0, 0, 0))
+            self.screen.blit(textsurface, (0, y))
+            y += 22
 
     def step_by_step_display(self, edge_exploration_orders):
         running = True
                     
+        attempts = 0
         for edge_exploration_order in edge_exploration_orders:
             self.initialize_colors()
-            for from_, to, direction in edge_exploration_order:
+            attempts += 1
+            idx = 0
+            for from_, to, port_taken, direction in edge_exploration_order:
                 if self.has_quit():
                     running = False
                     break
+                idx += 1
 
                 # color only the currently used edge
                 self.clear_edge_colors()
@@ -103,10 +123,19 @@ class Plot:
                     self.color_forward_edge(from_, to)
                 elif direction == 'reverse':
                     self.color_reverse_edge(from_, to)
+                elif direction == 'backtrack':
+                    self.color_backtrack_edge(from_, to)
                 else:
                     assert False, "Unknown exploration direction: {}!".format(direction)
 
-                self.draw_window()
+                text = ['Port sequence: ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order),
+                        'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order[:idx]),
+                       'Current node: ' + str(from_),
+                       'Port chosen: ' + str(port_taken),
+                       'Next node: ' + str(to),
+                       'Attempts: ' + str(attempts)]
+
+                self.draw_window(text)
                 pygame.display.flip()
                 time.sleep(0.3)
         while running:
@@ -115,7 +144,16 @@ class Plot:
                 break
 
             self.clear_edge_colors()
-            self.draw_window()
+            self.draw_window(text)
             pygame.display.flip()
-        
 
+    def quick_display_graph(self):
+        self.initialize_colors(self)
+
+        running = True
+        while running:
+            if self.has_quit():
+                running = False
+                break
+            plot.draw_window([])
+            pygame.display.flip()

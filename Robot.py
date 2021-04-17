@@ -24,11 +24,11 @@ class ExploredPorts:
         backtrack_port = self.original_graph.get_port_to(to, self.current_node)
 
         if len(self.backtrack) > 0 and port == self.backtrack[-1]:
-            self.edge_exploration_orders[-1].append((self.current_node, to, 'reverse'))
+            self.edge_exploration_orders[-1].append((self.current_node, to, port, 'reverse'))
             self.current_node = to
             self.backtrack.pop()
         else:
-            self.edge_exploration_orders[-1].append((self.current_node, to, 'forward'))
+            self.edge_exploration_orders[-1].append((self.current_node, to, port, 'forward'))
             self.current_node = to
             self.backtrack.append(backtrack_port)
 
