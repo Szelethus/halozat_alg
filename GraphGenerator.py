@@ -5,6 +5,7 @@ import pygame
 import pylab
 from pygame.locals import *
 import time
+import json
 import random
 from PortNumberedGraph import PortNumberedGraph
 
@@ -89,10 +90,28 @@ class GraphGenerator:
                 edge_s[k][2]) + ', p2=' + str(edge_s[k][3]) + ')])'
 
             exec(random_graph)
-            #random_graph_to_txt = random_graph + '\r\n'
-            if not os.path.exists('Graphs'):
-                os.makedirs('Graphs')
-            f = open("Graphs/graph_"+str(number_of_nodes)+"_"+str(number_of_edges)+"_"+str(seed)+".txt", "w")
-            f.write(random_graph)
-            f.close()
+
+            if not os.path.exists('Graphs/graphs.json'):
+                f = open("Graphs/graphs.json", "w")
+                f.write("{\"graphs\":[]}")
+                f.close()
+
+            with open('Graphs/graphs.json') as json_file:
+                data = json.load(json_file)
+
+                temp = data['graphs']
+
+                # python object to be appended
+                y = {"num_of_nodes": number_of_nodes,
+                     "num_of_edges": number_of_edges,
+                     "seed": seed,
+                     "graph_dict": random_graph
+                     }
+
+                # appending data to emp_details
+                temp.append(y)
+
+            with open("Graphs/graphs.json", 'w') as f:
+                json.dump(data, f, indent=4)
+
             return G
