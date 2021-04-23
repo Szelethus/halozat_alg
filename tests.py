@@ -11,6 +11,8 @@ from Oracle import Oracle, MAP_ORACLE, INSTANCE_ORACLE
 from Robot import Robot
 from Plot import Plot
 from GraphGenerator import GraphGenerator
+import evaluate_metrics as ev
+import csv_helper
 
 def edge_attr_equivalence(attr1, attr2):
     print('_-------')
@@ -30,6 +32,8 @@ class TestSum(unittest.TestCase):
     #       0
     #        (2) 1----0 (3)    
     def test_encode_instance_default_start_node(self):
+        filename = csv_helper.create_unique_filename("test")
+        csv_helper.opencsv(filename)
         GraphToEncode = PortNumberedGraph()
         GraphToEncode.init_with_dicts(5, [
             dict(n1=0, p1=2, n2=1, p2=0),
@@ -41,7 +45,9 @@ class TestSum(unittest.TestCase):
         robot_pos = 0
         instance_oracle = Oracle(INSTANCE_ORACLE, GraphToEncode)
 
-        encoded_route, path, node_path, ports, ports_decimal, _ = instance_oracle.encode_with_stats(robot_pos)
+        encoded_route, path, node_path, ports, ports_decimal, spanning_tree = instance_oracle.encode_with_stats(robot_pos)
+
+        csv_helper.write_new_datas(filename, [ev.get_number_of_edges(GraphToEncode), ev.get_number_of_nodes(GraphToEncode), ev.get_graph_density(GraphToEncode), ev.get_number_of_leaves(spanning_tree) ])
 
         assert encoded_route == '1101011000010000000000001001000000'
         assert path == [1, 0, 1, 0, 1, 1, 0, 0]
