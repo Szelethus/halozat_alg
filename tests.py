@@ -7,7 +7,7 @@ from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
 from PortNumberedGraph import PortNumberedGraph
-from Oracle import Oracle, MAP_ORACLE, INSTANCE_ORACLE
+from Oracle import MapOracle, InstanceOracle
 from Robot import Robot
 from Plot import Plot
 from GraphGenerator import GraphGenerator
@@ -43,9 +43,9 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
-        instance_oracle = Oracle(INSTANCE_ORACLE, GraphToEncode)
+        instance_oracle = InstanceOracle(GraphToEncode, robot_pos)
 
-        stats = instance_oracle.encode_with_stats(robot_pos)
+        stats = instance_oracle.encode_with_stats()
 
         #csv_helper.write_new_datas(filename, [ev.get_number_of_edges(GraphToEncode), ev.get_number_of_nodes(GraphToEncode), ev.get_graph_density(GraphToEncode), ev.get_number_of_leaves(spanning_tree) ])
 
@@ -64,9 +64,9 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 3
-        instance_oracle = Oracle(INSTANCE_ORACLE, GraphToEncode)
+        instance_oracle = InstanceOracle(GraphToEncode, robot_pos)
 
-        stats = instance_oracle.encode_with_stats(robot_pos)
+        stats = instance_oracle.encode_with_stats()
 
         assert stats.code == '1111010000000000010000000000001001'
         assert stats.path == [1, 1, 1, 0, 1, 0, 0, 0]
@@ -83,9 +83,9 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 3
-        map_oracle = Oracle(MAP_ORACLE, GraphToEncode)
+        map_oracle = MapOracle(GraphToEncode)
 
-        stats = map_oracle.encode_with_stats(robot_pos)
+        stats = map_oracle.encode_with_stats()
 
         assert stats.code == '0101011000010000000000001001000000'
         assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
@@ -103,9 +103,9 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
-        map_oracle = Oracle(MAP_ORACLE, GraphToEncode)
+        map_oracle = MapOracle(GraphToEncode)
 
-        stats = map_oracle.encode_with_stats(robot_pos)
+        stats = map_oracle.encode_with_stats()
         robot = Robot(stats.code)
 
         assert nx.is_isomorphic(stats.spanning_tree, robot.G) #, edge_match=edge_attr_equivalence)
@@ -120,9 +120,9 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 2
-        map_oracle = Oracle(MAP_ORACLE, NewGraph)
+        map_oracle = MapOracle(NewGraph)
 
-        robot = Robot(map_oracle.encode(robot_pos))
+        robot = Robot(map_oracle.encode())
 
         print(robot.traverse(NewGraph, robot_pos))
 

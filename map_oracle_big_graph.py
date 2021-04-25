@@ -7,7 +7,7 @@ from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
 from PortNumberedGraph import PortNumberedGraph
-from Oracle import Oracle, MAP_ORACLE, INSTANCE_ORACLE
+from Oracle import MapOracle, InstanceOracle
 from Robot import Robot
 from Plot import Plot
 
@@ -70,10 +70,9 @@ Graph.init_with_dicts(24, [
     dict(n1=22, p1=1, n2=23, p2=0)
 ])
 
-robot_pos = 0
+robot_pos = 22
 
-instance_oracle = Oracle(INSTANCE_ORACLE, Graph)
-instance_oracle.encode(robot_pos)
+map_oracle = MapOracle(Graph)
 pos = {
     0  : ( 20, 100),
     1  : ( 20, 000),
@@ -100,7 +99,7 @@ pos = {
     22 : (530, 350),
     23 : (530, 250)
 }
-instance_oracle.print_encoding_info(robot_pos)
-robot = Robot(instance_oracle.encode(robot_pos))
+map_oracle.print_encoding_info()
+robot = Robot(map_oracle.encode())
 plot = Plot(Graph, pos)
 plot.step_by_step_display(robot.traverse(Graph, robot_pos).edge_exploration_orders)
