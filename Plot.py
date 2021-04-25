@@ -130,7 +130,7 @@ class Plot:
 
                 self.draw_window(text)
                 pygame.display.flip()
-                #time.sleep(0.3)
+                time.sleep(0.3)
         while running:
             if self.has_quit():
                 running = False

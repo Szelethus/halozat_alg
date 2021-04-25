@@ -43,6 +43,7 @@ class Oracle:
 
         path = []
         node_path = []
+        tree_node_expl_order = []
         ports = []
         ports_decimal = []
 
@@ -56,6 +57,7 @@ class Oracle:
                     #print('going from node', u, 'to', v, 'in', d)
                     path.append(1)
                     node_path.append(v)
+                    tree_node_expl_order.append(v)
                     visited_nodes += 1
                     ports.append(get_binary(self.G.get_port_to(u, v), bit))
                     ports_decimal.append(self.G.get_port_to(u, v))
@@ -67,7 +69,7 @@ class Oracle:
                     ports_decimal.append(self.G.get_port_to(v, u))
         encoded_route = str(self.oracle_type) + ''.join(str(x) for x in path + [0] + ports)
 
-        return encoded_route, path, node_path, ports, ports_decimal, spanning_tree
+        return RobotStatistics(encoded_route, path, node_path, ports, ports_decimal, spanning_tree)
 
     def encode(self, robot_pos):
         encoded_route, _, _, _, _, _ = self.encode_with_stats(robot_pos)
