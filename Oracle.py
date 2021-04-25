@@ -6,6 +6,7 @@ from pygame.locals import *
 import time
 import random
 from PortNumberedGraph import PortNumberedGraph
+from Statistics import OracleStatistics
 
 MAP_ORACLE = 0
 INSTANCE_ORACLE = 1
@@ -35,11 +36,9 @@ class Oracle:
     def encode_with_stats(self, robot_pos):
         spanning_tree = nx.minimum_spanning_tree(self.G)
 
-        if self.oracle_type == INSTANCE_ORACLE:
-            edges = nx.dfs_labeled_edges(spanning_tree, robot_pos)
-        else:
-            # Lets not make it random, otherwise it wouldn't be deterministic
-            edges = nx.dfs_labeled_edges(spanning_tree, 0)
+        root_id = robot_pos if self.oracle_type == INSTANCE_ORACLE else 0
+
+        edges = nx.dfs_labeled_edges(spanning_tree, root_id)
 
         path = []
         node_path = []
@@ -69,18 +68,19 @@ class Oracle:
                     ports_decimal.append(self.G.get_port_to(v, u))
         encoded_route = str(self.oracle_type) + ''.join(str(x) for x in path + [0] + ports)
 
-        return RobotStatistics(encoded_route, path, node_path, ports, ports_decimal, spanning_tree)
+        return OracleStatistics(self.oracle_type, self.G, spanning_tree, \
+                                root_id, path, node_path, tree_node_expl_order, \
+                                ports, ports_decimal, encoded_route)
 
     def encode(self, robot_pos):
-        encoded_route, _, _, _, _, _ = self.encode_with_stats(robot_pos)
-        return encoded_route
+        return self.encode_with_stats(robot_pos).code
 
     def print_encoding_info(self, robot_pos):
-        encoded_route, path, node_path, ports, ports_decimal, _ = self.encode_with_stats(robot_pos)
+        stats = self.encode_with_stats(robot_pos)
 
         print('---=== Encoding for', 'Map oracle' if self.oracle_type == MAP_ORACLE else 'Instance oracle', ', robot starting position at node', robot_pos, '===---')
-        print('Code generated for graph: ', encoded_route)
-        print('Structure of the graph (1:forward, 0:reverse): ', path)
-        print('DFS sequence of nodes: ', node_path)
-        print('DFS sequence of ports: ', ports)
-        print('DFS sequence of ports in decimal: ', ports_decimal)
+        print('Code generated for graph: ', stats.code)
+        print('Structure of the graph (1:forward, 0:reverse): ', stats.path)
+        print('DFS sequence of nodes: ', stats.node_path)
+        print('DFS sequence of ports: ', stats.ports)
+        print('DFS sequence of ports in decimal: ', stats.ports_decimal)
