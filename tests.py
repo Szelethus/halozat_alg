@@ -11,7 +11,6 @@ from Oracle import MapOracle, InstanceOracle
 from Robot import Robot
 from Plot import Plot
 from GraphGenerator import GraphGenerator
-import evaluate_metrics as ev
 import csv_helper
 from Statistics import CombinedStatistics, get_combined_csv_columns
 

@@ -178,9 +178,9 @@ class Robot:
 
     def traverse_instance_oracle(self, original_graph, starting_pos):
         assert self.oracle_type == INSTANCE_ORACLE
-        explored_ports = PathExploration(original_graph, starting_pos)
+        explored_ports = PathExploration(original_graph, starting_pos, self.instance_oracle_tour)
 
-        if not explored_ports.try_explore_port_sequence(self.instance_oracle_tour):
+        if not explored_ports.try_to_explore():
             assert False, "Failed to explore the graph with a instane oracle advice!"
         return explored_ports
         
@@ -222,6 +222,5 @@ class Robot:
             if stats.was_exploration_successful():
                 was_exploration_successful = True
 
-        print('starting pos:', starting_pos)
         assert was_exploration_successful, "Failed to explore the graph with a map oracle advice!"
         return stats_collection
