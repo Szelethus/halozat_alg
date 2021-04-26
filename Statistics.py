@@ -5,7 +5,7 @@ import networkx as nx
 from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
-from PortNumberedGraph import PortNumberedGraph
+from PortNumberedGraph import PortNumberedGraph, get_graph_csv_columns
 from GraphGenerator import GraphGenerator
 import csv_helper
 
@@ -45,16 +45,21 @@ class OracleStatistics:
         assert nx.is_tree(self.spanning_tree), "Leaf count requested on a non-tree graph!"
         return sum([1 for node in self.spanning_tree if self.spanning_tree.degree(node)==1])
 
-    def get_csv_columns(self):
-        return ['oracle type', 'tree forward edges', 'tree reverse edges', 'tree leaf count', 'tree root id', 'node visit sequence', 'node exploration sequence', 'port encoding']
-
     def get_csv_data(self):
         forward, reverse, _ = self.get_spanning_tree_edge_kinds()
 
-        return_val = [self.oracle_type, forward, reverse, self.get_leaf_count(), self.root_id, self.tree_node_expl_order, self.node_path, self.ports_decimal]
+        return_val = [self.oracle_type, forward, reverse, \
+                      self.get_leaf_count(), self.root_id, \
+                      self.tree_node_expl_order, self.node_path, \
+                      self.ports_decimal]
         
-        assert len(self.get_csv_columns()) == len(return_val)
+        assert len(get_oracle_csv_columns()) == len(return_val)
         return return_val
+
+def get_oracle_csv_columns():
+    return ['oracle type', 'tree forward edges', 'tree reverse edges', \
+            'tree leaf count', 'tree root id', 'node visit sequence', \
+            'node exploration sequence', 'port encoding']
 
 class ExplorationStatistics:
     def __init__(self, robot_root_id, starting_pos, f_tour, exploration_sequence):
@@ -88,20 +93,21 @@ class ExplorationStatistics:
     def realize_actual_root_ids(self, oracle_stats):
         self.actual_root_id = oracle_stats.tree_node_expl_order[self.robot_root_id]
 
-    def get_csv_columns(self):
-        return ['route root', 'robot starting node', 'port sequence', 'exploration length', 'forward edges taken', 'reverse edges taken', 'backtrack length', 'was route successful']
-
     def get_csv_data(self):
         forward, reverse, backtrack = self.get_exploration_kinds()
 
-        return_val = [self.actual_root_id, self.actual_robot_starting_pos, self.port_sequence(), len(self.port_sequence()), forward, reverse, backtrack, self.was_exploration_successful()]
+        return_val = [self.actual_root_id, self.actual_robot_starting_pos, \
+                      self.port_sequence(), len(self.port_sequence()), \
+                      forward, reverse, backtrack, \
+                      self.was_exploration_successful()]
         
-        assert len(self.get_csv_columns()) == len(return_val)
+        assert len(get_exploration_csv_columns()) == len(return_val)
         return return_val
 
-class RobotStatistics:
-    def __init__(self):
-        return
+def get_exploration_csv_columns():
+    return ['route root', 'robot starting node', 'port sequence', \
+            'exploration length', 'forward edges taken', \
+            'reverse edges taken', 'backtrack length', 'was route successful']
 
 class CombinedStatistics:
     def __init__(self, graph, oracle_stats, explorations_stats):
@@ -111,18 +117,17 @@ class CombinedStatistics:
             expl_stat.realize_actual_root_ids(self.oracle_stats)
         self.explorations_stats = explorations_stats
 
-    def get_csv_columns(self):
-        return self.graph.get_csv_columns() + \
-               self.oracle_stats.get_csv_columns() + \
-               self.explorations_stats[0].get_csv_columns()
-
     def fill_csv(self, filename):
         for expl_stat in self.explorations_stats:
             data = self.graph.get_csv_data() + \
                    self.oracle_stats.get_csv_data() + \
                    expl_stat.get_csv_data()
             
-            print(len(self.get_csv_columns()), len(data))
-            assert len(self.get_csv_columns()) == len(data)
+            assert len(get_combined_csv_columns()) == len(data)
             csv_helper.write_new_datas(filename, data)
+
+def get_combined_csv_columns():
+    return get_graph_csv_columns() + \
+           get_oracle_csv_columns() + \
+           get_exploration_csv_columns()
 

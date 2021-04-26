@@ -13,7 +13,7 @@ from Plot import Plot
 from GraphGenerator import GraphGenerator
 import evaluate_metrics as ev
 import csv_helper
-from Statistics import CombinedStatistics
+from Statistics import CombinedStatistics, get_combined_csv_columns
 
 def edge_attr_equivalence(attr1, attr2):
     print('_-------')
@@ -132,17 +132,17 @@ class TestSum(unittest.TestCase):
             dict(n1=2, p1=1, n2=3, p2=0)
         ])
 
-        robot_pos = 2
         map_oracle = MapOracle(new_graph)
         oracle_stats = map_oracle.encode_with_stats()
         robot = Robot(oracle_stats.code)
-        explorations_stats = robot.traverse(new_graph, robot_pos)
-
-        combined_stats = CombinedStatistics(new_graph, oracle_stats, explorations_stats)
 
         filename = "map_oracle_test"
-        csv_helper.opencsv(filename, combined_stats.get_csv_columns())
-        combined_stats.fill_csv(filename)
+        csv_helper.opencsv(filename, get_combined_csv_columns())
+
+        for robot_pos in new_graph.nodes():
+            explorations_stats = robot.traverse(new_graph, robot_pos)
+            combined_stats = CombinedStatistics(new_graph, oracle_stats, explorations_stats)
+            combined_stats.fill_csv(filename)
 
     def test_random_graph(self):
         graph_generator = GraphGenerator()

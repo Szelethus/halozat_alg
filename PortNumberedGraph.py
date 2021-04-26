@@ -99,11 +99,11 @@ class PortNumberedGraph(nx.Graph):
     def get_graph_density(self):
         return self.get_edge_count() / self.get_node_count()
 
-    def get_csv_columns(self):
-        return ['number of edges', 'number of nodes', 'graph density']
-
     def get_csv_data(self):
         return_val = [self.get_edge_count(), self.get_node_count(), self.get_graph_density()]
         
-        assert len(self.get_csv_columns()) == len(return_val)
+        assert len(get_graph_csv_columns()) == len(return_val)
         return return_val
+
+def get_graph_csv_columns():
+    return ['number of edges', 'number of nodes', 'graph density']

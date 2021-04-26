@@ -213,11 +213,15 @@ class Robot:
         
         stats_collection = []
 
+        was_exploration_successful = False
+
         for tour in f_tours:
             explored_ports = PathExploration(original_graph, starting_pos, tour)
             stats = explored_ports.try_to_explore()
             stats_collection.append(stats)
             if stats.was_exploration_successful():
-                #print('Found sequence:', tour)
-                return stats_collection
-        assert False, "Failed to explore the graph with a map oracle advice!"
+                was_exploration_successful = True
+
+        print('starting pos:', starting_pos)
+        assert was_exploration_successful, "Failed to explore the graph with a map oracle advice!"
+        return stats_collection
