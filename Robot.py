@@ -7,21 +7,21 @@ import random
 import networkx as nx
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MAP_ORACLE, INSTANCE_ORACLE
+from Statistics import ExplorationStatistics
 
-class ExploredPorts:
-    def __init__(self, original_graph, starting_pos):
+class PathExploration:
+    def __init__(self, original_graph, starting_pos, f_tour):
         # A list of tuples describing the ports the robot has taken so far in
         # the following structure:
-        #   (<f_tour>, (node_from, node_to, port, direction))
+        #   (node_from, node_to, port, direction)
         # Where the
-        #   * f_tour is as described in the article,
         #   * port is the port to be taken from node_from to reach node_to
         #   * direction is one of the following:
         #     - forward
         #     - reverse
         #     - backtrack, if the exploration failed and the robot is in the 
         #     process of going back to its starting point.
-        self.edge_exploration_orders = []
+        self.edge_exploration_sequence = []
 
         # A list of port numbers to be followed in a reverse order to reach the
         # starting point.
@@ -35,6 +35,10 @@ class ExploredPorts:
         # Mind that the robot doesn't know its position in the graph! From its
         # perspective, only port numbers exist.
         self.current_node = starting_pos
+        self.starting_pos = starting_pos
+
+        self.robot_root_id = f_tour[0]
+        self.port_sequence = f_tour[1]
 
     # From its current position, try to make the robot go through a port.
     # Returns false if no such port exists at the current position.
@@ -50,11 +54,11 @@ class ExploredPorts:
         # If we're going back to the previous node, we can pop the backtrack
         # stack.
         if len(self.backtrack) > 0 and port == self.backtrack[-1]:
-            self.edge_exploration_orders[-1][1].append((self.current_node, to, port, reverse_kind))
+            self.edge_exploration_sequence.append((self.current_node, to, port, reverse_kind))
             self.current_node = to
             self.backtrack.pop()
         else:
-            self.edge_exploration_orders[-1][1].append((self.current_node, to, port, 'forward'))
+            self.edge_exploration_sequence.append((self.current_node, to, port, 'forward'))
             self.current_node = to
             self.backtrack.append(backtrack_port)
 
@@ -66,14 +70,15 @@ class ExploredPorts:
             if not self.try_take_port(port, 'backtrack'):
                 assert False, "Failed to track back to start!"
 
-    def try_explore_port_sequence(self, port_sequence):
-        self.edge_exploration_orders.append((port_sequence, []))
-        for port in port_sequence:
+    def try_to_explore(self):
+        assert self.edge_exploration_sequence == [], "Path exploration is already complete!"
+
+        for port in self.port_sequence:
             if not self.try_take_port(port):
                 #print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
                 self.track_back_to_start()
-                return False
-        return True
+                break
+        return ExplorationStatistics(self.robot_root_id, self.port_sequence, self.edge_exploration_sequence)
 
 class Robot:
     def __init__(self, code):
@@ -173,7 +178,7 @@ class Robot:
 
     def traverse_instance_oracle(self, original_graph, starting_pos):
         assert self.oracle_type == INSTANCE_ORACLE
-        explored_ports = ExploredPorts(original_graph, starting_pos)
+        explored_ports = PathExploration(original_graph, starting_pos)
 
         if not explored_ports.try_explore_port_sequence(self.instance_oracle_tour):
             assert False, "Failed to explore the graph with a instane oracle advice!"
@@ -199,15 +204,20 @@ class Robot:
                     elif d == 'reverse':
                         ports.append(self.G.get_port_to(v, u))
                         ports_reverse.append(self.G.get_port_to(u, v))
-            f_tours.append(ports + ports_reverse[::-1])  # euler tour + reverse euler tour with the in,out ports of the edges
+            # Root + f tour
+            f_tours.append((root, ports + ports_reverse[::-1]))
         return f_tours
 
     def traverse_map_oracle(self, original_graph, starting_pos, f_tours):
         assert self.oracle_type == MAP_ORACLE
-        explored_ports = ExploredPorts(original_graph, starting_pos)
         
+        stats_collection = []
+
         for tour in f_tours:
-            if explored_ports.try_explore_port_sequence(tour):
+            explored_ports = PathExploration(original_graph, starting_pos, tour)
+            stats = explored_ports.try_to_explore()
+            stats_collection.append(stats)
+            if stats.was_exploration_successful():
                 #print('Found sequence:', tour)
-                return explored_ports
+                return stats_collection
         assert False, "Failed to explore the graph with a map oracle advice!"

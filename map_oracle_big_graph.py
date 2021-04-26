@@ -100,6 +100,10 @@ pos = {
     23 : (530, 250)
 }
 map_oracle.print_encoding_info()
-robot = Robot(map_oracle.encode())
+encode_stats = map_oracle.encode_with_stats()
+robot = Robot(encode_stats.code)
 plot = Plot(Graph, pos)
-plot.step_by_step_display(robot.traverse(Graph, robot_pos).edge_exploration_orders)
+exploration_stats = robot.traverse(Graph, robot_pos)
+for stat in exploration_stats:
+    stat.realize_actual_root_ids(encode_stats.tree_node_expl_order)
+plot.step_by_step_display(exploration_stats)

@@ -102,4 +102,5 @@ pos = {
 instance_oracle.print_encoding_info()
 robot = Robot(instance_oracle.encode())
 plot = Plot(Graph, pos)
-plot.step_by_step_display(robot.traverse(Graph, robot_pos).edge_exploration_orders)
+exploration_sequences = [x.exploration_sequence for x in robot.traverse(Graph, robot_pos)]
+plot.step_by_step_display(exploration_sequences)
