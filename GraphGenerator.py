@@ -91,12 +91,12 @@ class GraphGenerator:
 
             exec(random_graph)
 
-            if not os.path.exists('Graphs/graphs.json'):
-                f = open("Graphs/graphs.json", "w")
+            if not os.path.exists('graphs.json'):
+                f = open("graphs.json", "w")
                 f.write("{\"graphs\":[]}")
                 f.close()
 
-            with open('Graphs/graphs.json') as json_file:
+            with open('graphs.json') as json_file:
                 data = json.load(json_file)
 
                 temp = data['graphs']
@@ -111,7 +111,7 @@ class GraphGenerator:
                 # appending data to emp_details
                 temp.append(y)
 
-            with open("Graphs/graphs.json", 'w') as f:
+            with open("graphs.json", 'w') as f:
                 json.dump(data, f, indent=4)
 
             return G
