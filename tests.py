@@ -13,6 +13,7 @@ from Plot import Plot
 from GraphGenerator import GraphGenerator
 import evaluate_metrics as ev
 import csv_helper
+from Statistics import CombinedStatistics
 
 def edge_attr_equivalence(attr1, attr2):
     print('_-------')
@@ -32,8 +33,6 @@ class TestSum(unittest.TestCase):
     #       0
     #        (2) 1----0 (3)    
     def test_encode_instance_default_start_node(self):
-        filename = csv_helper.create_unique_filename("test")
-        csv_helper.opencsv(filename)
         GraphToEncode = PortNumberedGraph()
         GraphToEncode.init_with_dicts(5, [
             dict(n1=0, p1=2, n2=1, p2=0),
@@ -46,8 +45,6 @@ class TestSum(unittest.TestCase):
         instance_oracle = InstanceOracle(GraphToEncode, robot_pos)
 
         stats = instance_oracle.encode_with_stats()
-
-        #csv_helper.write_new_datas(filename, [ev.get_number_of_edges(GraphToEncode), ev.get_number_of_nodes(GraphToEncode), ev.get_graph_density(GraphToEncode), ev.get_number_of_leaves(spanning_tree) ])
 
         assert stats.code == '1101011000010000000000001001000000'
         assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
@@ -126,6 +123,26 @@ class TestSum(unittest.TestCase):
 
         print(robot.traverse(NewGraph, robot_pos))
 
+    def test_map_oracle_csv(self):
+        new_graph = PortNumberedGraph()
+        new_graph.init_with_dicts(5, [
+            dict(n1=0, p1=2, n2=1, p2=0),
+            dict(n1=0, p1=0, n2=4, p2=0),
+            dict(n1=0, p1=1, n2=2, p2=0),
+            dict(n1=2, p1=1, n2=3, p2=0)
+        ])
+
+        robot_pos = 2
+        map_oracle = MapOracle(new_graph)
+        oracle_stats = map_oracle.encode_with_stats()
+        robot = Robot(oracle_stats.code)
+        explorations_stats = robot.traverse(new_graph, robot_pos)
+
+        combined_stats = CombinedStatistics(new_graph, oracle_stats, explorations_stats)
+
+        filename = "map_oracle_test"
+        csv_helper.opencsv(filename, combined_stats.get_csv_columns())
+        combined_stats.fill_csv(filename)
 
     def test_random_graph(self):
         graph_generator = GraphGenerator()

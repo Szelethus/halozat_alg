@@ -78,7 +78,7 @@ class PathExploration:
                 #print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
                 self.track_back_to_start()
                 break
-        return ExplorationStatistics(self.robot_root_id, self.port_sequence, self.edge_exploration_sequence)
+        return ExplorationStatistics(self.robot_root_id, self.starting_pos, self.port_sequence, self.edge_exploration_sequence)
 
 class Robot:
     def __init__(self, code):

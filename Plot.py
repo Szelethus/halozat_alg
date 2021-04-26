@@ -113,6 +113,7 @@ class Plot:
 
                 text = ['Port sequence: ' + ''.join(str(x) for x in f_tour),
                         'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in exploration_sequence[:idx]),
+                       'Robot starting node: ' + str(path_exploration_stats.actual_robot_starting_pos),
                        'Current route is rooted at node: ' + str(path_exploration_stats.actual_root_id),
                        'Current node: ' + str(from_),
                        'Port chosen: ' + str(port_taken),
@@ -133,7 +134,7 @@ class Plot:
 
                 self.draw_window(text)
                 pygame.display.flip()
-                time.sleep(0.3)
+                #time.sleep(0.3)
         while running:
             if self.has_quit():
                 running = False

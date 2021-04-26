@@ -39,7 +39,7 @@ class Oracle:
 
         path = []
         node_path = []
-        tree_node_expl_order = []
+        tree_node_expl_order = [self.root_id]
         ports = []
         ports_decimal = []
 
@@ -78,8 +78,9 @@ class Oracle:
         print('---=== Encoding for', 'Map oracle' if self.get_oracle_bit() == MAP_ORACLE else 'Instance oracle ===---')
         print('Code generated for graph: ', stats.code)
         print('Structure of the graph (1:forward, 0:reverse): ', stats.path)
-        print('DFS sequence of nodes: ', stats.node_path)
-        print('DFS sequence of ports: ', stats.ports)
+        print('DFS sequence of nodes:  ', stats.node_path)
+        print('Node exploration order: ', stats.tree_node_expl_order)
+        print('DFS sequence of ports:  ', stats.ports)
         print('DFS sequence of ports in decimal: ', stats.ports_decimal)
 
 class MapOracle(Oracle):

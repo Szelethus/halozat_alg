@@ -70,7 +70,7 @@ Graph.init_with_dicts(24, [
     dict(n1=22, p1=1, n2=23, p2=0)
 ])
 
-robot_pos = 22
+robot_pos = 5
 
 map_oracle = MapOracle(Graph)
 pos = {
