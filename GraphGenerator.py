@@ -9,8 +9,9 @@ import json
 import random
 from PortNumberedGraph import PortNumberedGraph
 
+
 class GraphGenerator:
-    def get_random_graph(self, number_of_nodes, number_of_edges=None, seed=None):
+    def get_random_graph(self, number_of_nodes, number_of_edge=None, seed=None):
         node_s = []
         port_s = list()
         edge_s = []
@@ -18,12 +19,13 @@ class GraphGenerator:
         if seed is None:
             seed = random.randint(0, 100)
         random.seed(seed)
-        num_of_max_edge_number = number_of_nodes*((number_of_nodes-1)/2)
-        if number_of_edges is None:
-            number_of_edges = random.randint(0, num_of_max_edge_number)
-        if((number_of_edges < number_of_nodes - 1 or number_of_edges > num_of_max_edge_number)
-                and number_of_edges is not None):
-           return print('Error: the number of edges or nodes is incorrect!')
+        num_of_max_edge_number = number_of_nodes * ((number_of_nodes - 1) / 2)
+        if number_of_edge is None:
+            number_of_edges = random.randint(number_of_nodes - 1, num_of_max_edge_number)
+        else:
+            number_of_edges = number_of_edge
+        if number_of_edges < number_of_nodes - 1 or number_of_edges > num_of_max_edge_number:
+            print('Error: the number of edges or nodes is incorrect!')
         else:
             # add first n1, p1, n2, p2
             for i in range(number_of_nodes):
@@ -54,7 +56,7 @@ class GraphGenerator:
                 edge_s.append([n1, p1, n2, p2])
 
             # add extra edges to the tree if you don't just need tree
-            for i in range(0, number_of_edges - (number_of_nodes-1)):
+            for i in range(0, number_of_edges - (number_of_nodes - 1)):
                 n1 = random.randint(0, number_of_nodes - 1)
                 n2 = random.randint(0, number_of_nodes - 1)
                 while [n1, n2] in pair_s or port_s[n1] == number_of_nodes - 2:
