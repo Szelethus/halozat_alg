@@ -7,10 +7,12 @@ from networkx import minimum_spanning_tree
 import matplotlib.pyplot as plt
 
 from PortNumberedGraph import PortNumberedGraph
-from Oracle import Oracle, MAP_ORACLE, INSTANCE_ORACLE
+from Oracle import MapOracle, InstanceOracle
 from Robot import Robot
 from Plot import Plot
 from GraphGenerator import GraphGenerator
+import csv_helper
+from Statistics import CombinedStatistics, get_combined_csv_columns
 
 def edge_attr_equivalence(attr1, attr2):
     print('_-------')
@@ -39,14 +41,14 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
-        instance_oracle = Oracle(INSTANCE_ORACLE, GraphToEncode)
+        instance_oracle = InstanceOracle(GraphToEncode, robot_pos)
 
-        encoded_route, path, node_path, ports, ports_decimal, _ = instance_oracle.encode_with_stats(robot_pos)
+        stats = instance_oracle.encode_with_stats()
 
-        assert encoded_route == '1101011000010000000000001001000000'
-        assert path == [1, 0, 1, 0, 1, 1, 0, 0]
-        assert node_path == [1, 0, 4, 0, 2, 3, 2, 0]
-        assert ports == ['010', '000', '000', '000', '001', '001', '000', '000']
+        assert stats.code == '1101011000010000000000001001000000'
+        assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
+        assert stats.node_path == [1, 0, 4, 0, 2, 3, 2, 0]
+        assert stats.ports == ['010', '000', '000', '000', '001', '001', '000', '000']
 
     def test_encode_instance_3_start_node(self):
         GraphToEncode = PortNumberedGraph()
@@ -58,14 +60,14 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 3
-        instance_oracle = Oracle(INSTANCE_ORACLE, GraphToEncode)
+        instance_oracle = InstanceOracle(GraphToEncode, robot_pos)
 
-        encoded_route, path, node_path, ports, ports_decimal, _ = instance_oracle.encode_with_stats(robot_pos)
+        stats = instance_oracle.encode_with_stats()
 
-        assert encoded_route == '1111010000000000010000000000001001'
-        assert path == [1, 1, 1, 0, 1, 0, 0, 0]
-        assert node_path == [2, 0, 1, 0, 4, 0, 2, 3]
-        assert ports == ['000', '000', '010', '000', '000', '000', '001', '001']
+        assert stats.code == '1111010000000000010000000000001001'
+        assert stats.path == [1, 1, 1, 0, 1, 0, 0, 0]
+        assert stats.node_path == [2, 0, 1, 0, 4, 0, 2, 3]
+        assert stats.ports == ['000', '000', '010', '000', '000', '000', '001', '001']
 
     def test_encode_map_3_start_node(self):
         GraphToEncode = PortNumberedGraph()
@@ -77,14 +79,14 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 3
-        map_oracle = Oracle(MAP_ORACLE, GraphToEncode)
+        map_oracle = MapOracle(GraphToEncode)
 
-        encoded_route, path, node_path, ports, ports_decimal, _ = map_oracle.encode_with_stats(robot_pos)
+        stats = map_oracle.encode_with_stats()
 
-        assert encoded_route == '0101011000010000000000001001000000'
-        assert path == [1, 0, 1, 0, 1, 1, 0, 0]
-        assert node_path == [1, 0, 4, 0, 2, 3, 2, 0]
-        assert ports == ['010', '000', '000', '000', '001', '001', '000', '000']
+        assert stats.code == '0101011000010000000000001001000000'
+        assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
+        assert stats.node_path == [1, 0, 4, 0, 2, 3, 2, 0]
+        assert stats.ports == ['010', '000', '000', '000', '001', '001', '000', '000']
 
 
     def test_tiny_graph_from_decode(self):
@@ -97,12 +99,12 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 0
-        map_oracle = Oracle(MAP_ORACLE, GraphToEncode)
+        map_oracle = MapOracle(GraphToEncode)
 
-        encoded_route, _, _, _, _, spanning_tree = map_oracle.encode_with_stats(robot_pos)
-        robot = Robot(encoded_route)
+        stats = map_oracle.encode_with_stats()
+        robot = Robot(stats.code)
 
-        assert nx.is_isomorphic(spanning_tree, robot.G) #, edge_match=edge_attr_equivalence)
+        assert nx.is_isomorphic(stats.spanning_tree, robot.G) #, edge_match=edge_attr_equivalence)
 
     def test_map_oracle(self):
         NewGraph = PortNumberedGraph()
@@ -114,12 +116,32 @@ class TestSum(unittest.TestCase):
         ])
 
         robot_pos = 2
-        map_oracle = Oracle(MAP_ORACLE, NewGraph)
+        map_oracle = MapOracle(NewGraph)
 
-        robot = Robot(map_oracle.encode(robot_pos))
+        robot = Robot(map_oracle.encode())
 
         print(robot.traverse(NewGraph, robot_pos))
 
+    def test_map_oracle_csv(self):
+        new_graph = PortNumberedGraph()
+        new_graph.init_with_dicts(5, [
+            dict(n1=0, p1=2, n2=1, p2=0),
+            dict(n1=0, p1=0, n2=4, p2=0),
+            dict(n1=0, p1=1, n2=2, p2=0),
+            dict(n1=2, p1=1, n2=3, p2=0)
+        ])
+
+        map_oracle = MapOracle(new_graph)
+        oracle_stats = map_oracle.encode_with_stats()
+        robot = Robot(oracle_stats.code)
+
+        filename = "map_oracle_test"
+        csv_helper.opencsv(filename, get_combined_csv_columns())
+
+        for robot_pos in new_graph.nodes():
+            explorations_stats = robot.traverse(new_graph, robot_pos)
+            combined_stats = CombinedStatistics(new_graph, oracle_stats, explorations_stats)
+            combined_stats.fill_csv(filename)
 
     def test_random_graph(self):
         graph_generator = GraphGenerator()

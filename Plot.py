@@ -95,22 +95,26 @@ class Plot:
             self.screen.blit(textsurface, (0, y))
             y += 22
 
-    def step_by_step_display(self, edge_exploration_orders):
+    def step_by_step_display(self, all_paths_exploration_stats):
         running = True
                     
         attempts = 0
-        for port_sequence, edge_exploration_order in edge_exploration_orders:
+        for path_exploration_stats in all_paths_exploration_stats:
             self.initialize_colors()
             attempts += 1
             idx = 0
-            for from_, to, port_taken, direction in edge_exploration_order:
+            f_tour = path_exploration_stats.f_tour
+            exploration_sequence = path_exploration_stats.exploration_sequence
+            for from_, to, port_taken, direction in exploration_sequence:
                 if self.has_quit():
                     running = False
                     break
                 idx += 1
 
-                text = ['Port sequence: ' + ''.join(str(x) for x in port_sequence),
-                        'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in edge_exploration_order[:idx]),
+                text = ['Port sequence: ' + ''.join(str(x) for x in f_tour),
+                        'Ports taken  : ' + ''.join(str(x) for _, _, x, _ in exploration_sequence[:idx]),
+                       'Robot starting node: ' + str(path_exploration_stats.actual_robot_starting_pos),
+                       'Current route is rooted at node: ' + str(path_exploration_stats.actual_root_id),
                        'Current node: ' + str(from_),
                        'Port chosen: ' + str(port_taken),
                        'Next node: ' + str(to),

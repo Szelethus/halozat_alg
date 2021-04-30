@@ -89,3 +89,21 @@ class PortNumberedGraph(nx.Graph):
                                  edge_labels}  # use this to modify the tuple keyed dict if it has > 2 elements, else ignore
 
         return formatted_edge_labels
+
+    def get_edge_count(self):
+        return len(self.edges)
+
+    def get_node_count(self):
+        return len(self.nodes)
+
+    def get_graph_density(self):
+        return self.get_edge_count() / self.get_node_count()
+
+    def get_csv_data(self):
+        return_val = [self.get_edge_count(), self.get_node_count(), self.get_graph_density()]
+        
+        assert len(get_graph_csv_columns()) == len(return_val)
+        return return_val
+
+def get_graph_csv_columns():
+    return ['number of edges', 'number of nodes', 'graph density']
