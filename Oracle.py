@@ -33,7 +33,7 @@ class Oracle:
         spanning_tree = nx.minimum_spanning_tree(self.G)
         edges = nx.dfs_labeled_edges(spanning_tree, self.root_id)
 
-        path = []
+        structure = []
         node_path = []
         tree_node_expl_order = [self.root_id]
         ports = []
@@ -47,7 +47,7 @@ class Oracle:
             if visited_nodes != self.G.number_of_nodes():
                 if d == "forward":
                     #print('going from node', u, 'to', v, 'in', d)
-                    path.append(1)
+                    structure.append(1)
                     node_path.append(v)
                     tree_node_expl_order.append(v)
                     visited_nodes += 1
@@ -55,14 +55,14 @@ class Oracle:
                     ports_decimal.append(self.G.get_port_to(u, v))
                 elif d == 'reverse':
                     #print('going from node', v, 'to', u, 'in', d)
-                    path.append(0)
+                    structure.append(0)
                     node_path.append(u)
                     ports.append(get_binary(self.G.get_port_to(v, u), bit))
                     ports_decimal.append(self.G.get_port_to(v, u))
-        encoded_route = str(self.get_oracle_bit()) + ''.join(str(x) for x in path + [0] + ports)
+        encoded_route = str(self.get_oracle_bit()) + ''.join(str(x) for x in structure + [0] + ports)
 
         return OracleStatistics(self.get_oracle_bit(), self.G, spanning_tree, \
-                                self.root_id, path, node_path, tree_node_expl_order, \
+                                self.root_id, structure, node_path, tree_node_expl_order, \
                                 ports, ports_decimal, encoded_route)
 
     def encode(self):
@@ -73,7 +73,7 @@ class Oracle:
 
         print('---=== Encoding for', 'Map oracle' if self.get_oracle_bit() == MAP_ORACLE else 'Instance oracle ===---')
         print('Code generated for graph: ', stats.code)
-        print('Structure of the graph (1:forward, 0:reverse): ', stats.path)
+        print('Structure of the graph (1:forward, 0:reverse): ', stats.structure)
         print('DFS sequence of nodes:  ', stats.node_path)
         print('Node exploration order: ', stats.tree_node_expl_order)
         print('DFS sequence of ports:  ', stats.ports)

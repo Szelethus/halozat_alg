@@ -43,7 +43,7 @@ class TestSum(unittest.TestCase):
         stats = instance_oracle.encode_with_stats()
 
         assert stats.code == '1101011000010000000000001001000000'
-        assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
+        assert stats.structure == [1, 0, 1, 0, 1, 1, 0, 0]
         assert stats.node_path == [1, 0, 4, 0, 2, 3, 2, 0]
         assert stats.ports == ['010', '000', '000', '000', '001', '001', '000', '000']
 
@@ -62,7 +62,7 @@ class TestSum(unittest.TestCase):
         stats = instance_oracle.encode_with_stats()
 
         assert stats.code == '1111010000000000010000000000001001'
-        assert stats.path == [1, 1, 1, 0, 1, 0, 0, 0]
+        assert stats.structure == [1, 1, 1, 0, 1, 0, 0, 0]
         assert stats.node_path == [2, 0, 1, 0, 4, 0, 2, 3]
         assert stats.ports == ['000', '000', '010', '000', '000', '000', '001', '001']
 
@@ -81,7 +81,7 @@ class TestSum(unittest.TestCase):
         stats = map_oracle.encode_with_stats()
 
         assert stats.code == '0101011000010000000000001001000000'
-        assert stats.path == [1, 0, 1, 0, 1, 1, 0, 0]
+        assert stats.structure == [1, 0, 1, 0, 1, 1, 0, 0]
         assert stats.node_path == [1, 0, 4, 0, 2, 3, 2, 0]
         assert stats.ports == ['010', '000', '000', '000', '001', '001', '000', '000']
 

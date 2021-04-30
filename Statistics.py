@@ -5,17 +5,32 @@ from PortNumberedGraph import PortNumberedGraph, get_graph_csv_columns
 from GraphGenerator import GraphGenerator
 import csv_helper
 
+# Comprehensive statistics describing the the ecoding mechanism of the oracle.
 class OracleStatistics:
     def __init__(self, oracle_type, original_graph, spanning_tree, root_id, path, node_path,\
                  tree_node_expl_order, ports, ports_decimal, code):
 
         self.oracle_type = oracle_type
         self.original_graph = original_graph
+        # The spanning tree used by oracle, on which the encoding is based.
         self.spanning_tree = spanning_tree
+        # The node number on which the spanning tree is rooted.
         self.root_id = root_id
-        self.path = path
+        self.structure = path
+        # Node sequence describing the euler route of the DFS exploration
+        # in the spanning tree.
         self.node_path = node_path
+        # Nodes of the graph in the order of visitation. Nodes are only present
+        # once.
+        # The robot will construct its tree in this order; for example:
+        #   If a graph with 5 nodes are visited in the DFS exploration in the 
+        #   following order: [3,2,1,0,4], the robot will reconstruct its graph
+        #   with its first node being node 3, its second node is node 2.
+        # This field allows us to realize what the robot's graph nodes are in
+        # the original graph.
         self.tree_node_expl_order = tree_node_expl_order
+        assert len(self.tree_node_expl_order) == len(self.original_graph.nodes())
+
         self.ports = ports
         self.ports_decimal = ports_decimal
         self.code = code
@@ -59,7 +74,12 @@ def get_oracle_csv_columns():
 
 class ExplorationStatistics:
     def __init__(self, robot_root_id, starting_pos, f_tour, exploration_sequence):
+        # The root of the route in the graph that the robot constructed. This
+        # node ID does NOT describe the same node in the original graph!
         self.robot_root_id = robot_root_id
+        # The root of the route in the original graph. The robot doesn't know
+        # how the original graph looks like; this will be realized later
+        # with the help of an OracleStatistics object.
         self.actual_root_id = None
         self.actual_robot_starting_pos = starting_pos
         self.f_tour = f_tour
