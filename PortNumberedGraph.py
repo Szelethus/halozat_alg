@@ -1,9 +1,6 @@
 import networkx as nx
 from networkx import minimum_spanning_tree
 import math
-import pygame
-import pylab
-from pygame.locals import *
 import time
 
 class PortNumberedGraph(nx.Graph):

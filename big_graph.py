@@ -1,10 +1,3 @@
-import unittest
-import math
-import random
-
-import networkx as nx
-from networkx import minimum_spanning_tree
-
 from PortNumberedGraph import PortNumberedGraph
 
 def get_big_graph():

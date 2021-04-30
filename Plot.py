@@ -98,10 +98,9 @@ class Plot:
     def step_by_step_display(self, all_paths_exploration_stats):
         running = True
                     
-        attempts = 0
+        successes = 0
         for path_exploration_stats in all_paths_exploration_stats:
             self.initialize_colors()
-            attempts += 1
             idx = 0
             f_tour = path_exploration_stats.f_tour
             exploration_sequence = path_exploration_stats.exploration_sequence
@@ -118,7 +117,7 @@ class Plot:
                        'Current node: ' + str(from_),
                        'Port chosen: ' + str(port_taken),
                        'Next node: ' + str(to),
-                       'Attempts: ' + str(attempts)]
+                       'Successful traverses: ' + str(successes)]
 
                 # color only the currently used edge
                 self.clear_edge_colors()
@@ -135,6 +134,8 @@ class Plot:
                 self.draw_window(text)
                 pygame.display.flip()
                 #time.sleep(0.3)
+            if path_exploration_stats.was_exploration_successful():
+                successes += 1
         while running:
             if self.has_quit():
                 running = False

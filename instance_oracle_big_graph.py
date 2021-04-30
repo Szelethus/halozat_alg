@@ -1,11 +1,3 @@
-import unittest
-import math
-import random
-
-import networkx as nx
-from networkx import minimum_spanning_tree
-import matplotlib.pyplot as plt
-
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MapOracle, InstanceOracle
 from Robot import Robot

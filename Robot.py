@@ -1,9 +1,5 @@
 import math
-import pygame
-import pylab
-from pygame.locals import *
 import time
-import random
 import networkx as nx
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MAP_ORACLE, INSTANCE_ORACLE

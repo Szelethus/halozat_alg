@@ -1,11 +1,3 @@
-import unittest
-import math
-import random
-
-import networkx as nx
-from networkx import minimum_spanning_tree
-import matplotlib.pyplot as plt
-
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MapOracle, InstanceOracle
 from Robot import Robot
@@ -26,8 +18,8 @@ exploration_stats = robot.traverse(Graph, robot_pos)
 for stat in exploration_stats:
     stat.realize_actual_root_ids(encode_stats)
 
-#plot = Plot(Graph, pos)
-#plot.step_by_step_display(exploration_stats)
+plot = Plot(Graph, pos)
+plot.step_by_step_display(exploration_stats)
 
 filename = "big_graph_stats"
 csv_helper.opencsv(filename, get_combined_csv_columns())
