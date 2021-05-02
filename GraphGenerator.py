@@ -26,7 +26,7 @@ class GraphGenerator:
         else:
             number_of_edges = number_of_edge
         if number_of_edges < number_of_nodes - 1 or number_of_edges > num_of_max_edge_number:
-            assert print('Error: the number of edges or nodes is incorrect!')
+            assert False, 'Error: the number of edges or nodes is incorrect!'
         else:
             # add first n1, p1, n2, p2
             for i in range(number_of_nodes):
@@ -39,7 +39,7 @@ class GraphGenerator:
                 n2 = random.randint(0, number_of_nodes - 1)
             p2 = 0
             node_s.append(n2)
-            print(n1, n2, p1, p2)
+            # print(n1, n2, p1, p2)
             pair_s.append([n1, n2])
             edge_s.append([n1, p1, n2, p2])
             # add other n1, p1, n2, p2 in a spanning tree
@@ -52,7 +52,7 @@ class GraphGenerator:
                     n2 = random.randint(0, number_of_nodes - 1)
                 p2 = 0
                 node_s.append(n2)
-                print(n1, n2, p1, p2)
+                #print(n1, n2, p1, p2)
                 pair_s.append([n1, n2])
                 edge_s.append([n1, p1, n2, p2])
 
@@ -68,7 +68,7 @@ class GraphGenerator:
                     n2 = random.randint(0, number_of_nodes - 1)
                 p2 = port_s[n2] + 1
                 port_s[n2] += 1
-                print(n1, n2, p1, p2)
+                #print(n1, n2, p1, p2)
                 pair_s.append([n1, n2])
                 edge_s.append([n1, p1, n2, p2])
 
@@ -130,9 +130,9 @@ class GraphGenerator:
         random.seed(seed)
         num_of_max_edge_number = number_of_nodes * ((number_of_nodes - 1) / 2)
         if number_of_edges < number_of_nodes - 1 or number_of_edges > num_of_max_edge_number:
-            assert print('Error: the number of edges or nodes is incorrect!')
+            assert False, 'Error: the number of edges or nodes is incorrect!'
         elif (number_of_nodes * degree) % 2 != 0:
-            assert print("Error: n * d must be even")
+            assert False, "Error: n * d must be even"
         else:
             degrees = []
             for i in range(number_of_nodes):
@@ -148,7 +148,7 @@ class GraphGenerator:
                 n2 = random.randint(0, number_of_nodes - 1)
             p2 = 0
             node_s.append(n2)
-            print(n1, n2, p1, p2)
+            #print(n1, n2, p1, p2)
             pair_s.append([n1, n2])
             edge_s.append([n1, p1, n2, p2])
             degrees[n1] = 1
@@ -169,7 +169,7 @@ class GraphGenerator:
                     n2 = random.randint(0, number_of_nodes - 1)
                 p2 = 0
                 node_s.append(n2)
-                print(n1, n2, p1, p2)
+                #print(n1, n2, p1, p2)
                 pair_s.append([n1, n2])
                 edge_s.append([n1, p1, n2, p2])
 
@@ -215,7 +215,7 @@ class GraphGenerator:
                                                                                                          ' n2=' + str(
                 edge_s[k][2]) + ', p2=' + str(edge_s[k][3]) + ')])'
 
-            print(random_graph)
+            #print(random_graph)
             exec(random_graph)
 
             if not os.path.exists('graphs.json'):
