@@ -4,6 +4,7 @@ import networkx as nx
 from PortNumberedGraph import PortNumberedGraph
 from Oracle import MAP_ORACLE, INSTANCE_ORACLE
 from Statistics import ExplorationStatistics
+import time
 
 class PathExploration:
     def __init__(self, original_graph, starting_pos, f_tour):
@@ -68,13 +69,14 @@ class PathExploration:
 
     def try_to_explore(self):
         assert self.edge_exploration_sequence == [], "Path exploration is already complete!"
-
+        start_time = time.time()
         for port in self.port_sequence:
             if not self.try_take_port(port):
                 #print('Cannot proceed from node {} through port {}'.format(self.current_node, port))
                 self.track_back_to_start()
                 break
-        return ExplorationStatistics(self.robot_root_id, self.starting_pos, self.port_sequence, self.edge_exploration_sequence)
+        exp_time = time.time() - start_time
+        return ExplorationStatistics(self.robot_root_id, self.starting_pos, self.port_sequence, self.edge_exploration_sequence, exp_time)
 
 class Robot:
     def __init__(self, code):

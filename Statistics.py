@@ -73,7 +73,7 @@ def get_oracle_csv_columns():
             'node exploration sequence', 'port encoding']
 
 class ExplorationStatistics:
-    def __init__(self, robot_root_id, starting_pos, f_tour, exploration_sequence):
+    def __init__(self, robot_root_id, starting_pos, f_tour, exploration_sequence, expl_time):
         # The root of the route in the graph that the robot constructed. This
         # node ID does NOT describe the same node in the original graph!
         self.robot_root_id = robot_root_id
@@ -84,6 +84,7 @@ class ExplorationStatistics:
         self.actual_robot_starting_pos = starting_pos
         self.f_tour = f_tour
         self.exploration_sequence = exploration_sequence
+        self.expl_time = expl_time
 
     def port_sequence(self):
         return [port for _, _, port, _ in self.exploration_sequence]
@@ -115,7 +116,7 @@ class ExplorationStatistics:
         return_val = [self.actual_root_id, self.actual_robot_starting_pos, \
                       self.port_sequence(), len(self.port_sequence()), \
                       forward, reverse, backtrack, \
-                      self.was_exploration_successful()]
+                      self.was_exploration_successful(), self.expl_time]
         
         assert len(get_exploration_csv_columns()) == len(return_val)
         return return_val
@@ -123,7 +124,7 @@ class ExplorationStatistics:
 def get_exploration_csv_columns():
     return ['route root', 'robot starting node', 'port sequence', \
             'exploration length', 'forward edges taken', \
-            'reverse edges taken', 'backtrack length', 'was route successful']
+            'reverse edges taken', 'backtrack length', 'was route successful', 'time']
 
 class CombinedStatistics:
     def __init__(self, graph, oracle_stats, explorations_stats):
