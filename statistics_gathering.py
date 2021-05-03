@@ -12,11 +12,9 @@ def collect_comprehensive_map_statistics(filename, graph):
     oracle_stats = map_oracle.encode_with_stats()
     robot = Robot(oracle_stats.code)
 
-    robot_positions = [x * math.floor(len(graph.nodes()) / 10) for x in range(10)]
 
-    for idx, robot_pos in enumerate(robot_positions):
-        print('Robot starting at positions', idx + 1, '/', len(robot_positions)) 
-        explorations_stats = robot.traverse(graph, robot_pos)
-        combined_stats = CombinedStatistics(graph, oracle_stats, explorations_stats)
-        combined_stats.fill_csv(filename)
+    robot_pos = 0
+    explorations_stats = robot.traverse(graph, robot_pos)
+    combined_stats = CombinedStatistics(graph, oracle_stats, explorations_stats)
+    combined_stats.fill_csv(filename)
 
