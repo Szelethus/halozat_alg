@@ -60,5 +60,7 @@ def get_complete_graph_statistic(num_of_nodes):
     collect_comprehensive_map_statistics(filename, Graph)
 
 
+get_random_graph_statistics(200, 150)
+get_random_graph_statistics(300, 100)
+get_random_graph_statistics(400, 210)
 
-get_random_graph_statistics(50, 8)
