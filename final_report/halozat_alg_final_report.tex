@@ -12,21 +12,22 @@
   linecolor=orange,
   colorinlistoftodos]{todonotes}
 
-\title{Research and Implementation of Local Graph Transformations: Final report}
+\title{Research and Implementation of Deterministic Graph Exploration with Advice: Final report}
+\author[1]{Dorottya Benyovszki}
+\author[1]{Anna Böndicz Georgina}
 \author[1]{Kristóf Umann}
-\author[1]{Miklós Vadász Dániel}
 \affil[1]{Eötvös Loránd University, Faculty of Informatics}
 \date{\today}
 
-\input{preamble_tikz.tex}
-\input{preamble_lstlisting.tex}
+%\input{preamble_tikz.tex}
+%\input{preamble_lstlisting.tex}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-  Connected graphs are a natural choice of data structure to model overlay networks. A frequent problem overlay networks present is the adaptation of its topology towards an ideal topology. How the adoptation is performed is the subject of numerous academic papers -- we investigated and prototyped a novel approach that gracefully avoids sybil and eclipse attacks. The algorithm is discussed in a paper called \textit{,,On the complexity of local graph transformations''}\cite{ulgt}, and resticts the adaptation process' toolset to 4 well defined operations, or as the paper calls them, \textit{primitives}. The local graph transformation problem (\textit{LGT}) leans on the solution to the generalized undirected steiner forest problem (\textit{USF}). Both LGT and USF are NP-hard problems. \cite{ulgt} proposes a 2-approximate solution, and requires the use of a 2-approximate solution for USF.
+  Consider an $n$-node undirected graph, where each node $u$ with degree $d$ arbirarily assigns label numbers $0,\dots,d-1$ to each of its edges. We call these edge labels (of which each edge has two) port numbers.
 
   Our research and prototyping process presented unforeseen challenges and interesting results. On the research side, we found that clever root picking strategies can meaningfully reduce execution time and reduce the number of primitives needed to be used. We took measurements of our prototype that highlight how the number of primitives used and the execution time of the algorithm changes on graphs with different characteristics.
 \end{abstract}
