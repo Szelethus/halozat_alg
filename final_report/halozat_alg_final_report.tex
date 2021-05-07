@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage{lipsum}
 \usepackage{authblk}
@@ -111,15 +112,22 @@ In a shorter advice, an oracle may only be able to provide limited information, 
 \section{Results}
 \label{sec:results}
 
+% Turn off page numbering.
+\pagenumbering{gobble}
+\newgeometry{showframe,paper=a4paper,top=0.0in,bottom=0.0in,right=0.5in,left=0.5in}
+
 \begin{landscape}
 \begin{figure}
-  \vspace{-2.9cm}
   \centering
   \includegraphics[width=8cm]{figures/random_uj/edge_den_succ.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
   \hspace{1cm}
   \includegraphics[width=8cm]{figures/random_uj/edge_expl.png}
   \vspace{1cm}
 
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+  \hspace{1cm}
   \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
   \hspace{1cm}
   \includegraphics[width=8cm]{figures/random_uj/edge_tree.png}
@@ -131,33 +139,28 @@ In a shorter advice, an oracle may only be able to provide limited information, 
 
 \begin{landscape}
 \begin{figure}
-  \vspace{-1.7cm}
   \centering
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_den_succ.png}
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_expl.png}
+  \includegraphics[width=8cm]{figures/random_uj/edge_den_succ.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_expl.png}
+  \vspace{1cm}
 
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_time.png}
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_tree.png}
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_tree.png}
 
   \caption{Measurements on increasing edge density. All graphs had 1000 nodes, and there were 10 additional and 10 excess edges.}
   \label{fig:edge-density}
 \end{figure}
 \end{landscape}
 
-\begin{landscape}
-\begin{figure}
-  \vspace{-1.7cm}
-  \centering
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_den_succ.png}
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_expl.png}
-
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_time.png}
-  \includegraphics[width=0.48\columnwidth]{figures/random_uj/edge_tree.png}
-
-  \caption{Measurements on increasing edge density. All graphs had 1000 nodes, and there were 10 additional and 10 excess edges.}
-  \label{fig:edge-density}
-\end{figure}
-\end{landscape}
+% Turn on page numbering.
+\pagenumbering{arabic}
+\restoregeometry
 
 \section{Future work}
 \label{sec:future-work}
