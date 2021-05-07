@@ -44,7 +44,7 @@ The robot, though we allow for infinite fuel and no tether, is still rather prim
 
 An outsider entity, knowledgable about the graph, called an \textit{oracle} provides an advice to the robot once, before it starts exploring. The quality of the advice affects the exploration time (the amount of nodes visited before visiting each at least once) of the robot. We discuss the quality in terms of size in bits. An \textit{instance oracle} also knows the starting position of the robot in the graph, while a \textit{map oracle} does not. As the more challenging case, we chose to focus on map oracles.
 
-In a shorter advice, an oracle may only be able to provide limited information, like the number of nodes in the graph, or more severe yet, an upper bound of said number. Our implementation is more lenient, and allows the encoding of a spanning tree in the graph, resulting in an advice of size $\mathbb{O}(n)$. In the case of a map oracle, however, this still forces the robot to attempt, and occasionally fail to explore certain routes. The rate of success has become our primary focus during our research: we show that the denser a graph is (the more edges it has relative to the number of nodes), the morel likely is a route to successfully traverse the graph.
+In a shorter advice, an oracle may only be able to provide limited information, like the number of nodes in the graph, or more severe yet, an upper bound of said number. Our implementation is more lenient, and allows the encoding of a spanning tree in the graph, resulting in an advice of size $\mathcal{O}(n)$. In the case of a map oracle, however, this still forces the robot to attempt, and occasionally fail to explore certain routes. The rate of success has become our primary focus during our research: we show that the denser a graph is (the more edges it has relative to the number of nodes), the morel likely is a route to successfully traverse the graph.
 
 \begin{figure}
   \centering
@@ -56,6 +56,14 @@ In a shorter advice, an oracle may only be able to provide limited information, 
 \section{Our chosen algorithm}
 \label{sec:algorithm}
 
+\cite{gorain2018deterministic} discusses how the size of the advice affects the exploration time robot. Naturally, a longer advice may be a host of more information, which the robot can exploit to shorten the amount of required node visits. For instance, an advice of size
+\begin{compactitem}
+  \item $\mathcal{O}(\log\log\log n)$ for some may only encode information as basic an upper bound of $n$.
+  \item $\mathcal{O}(n)$ may encode some parts of the graph, like a spanning tree with the appropriate port numbers.
+\end{compactitem}
+We chose to implement and research the latter case. Whether the advice was constructed by a map or instance oracle can be encoded using a single flag bit. The encoding algorithm for a map oracle with our additions on port number encoding is described on Figure \ref{fig:encoding-alg}. Figure \ref{fig:encoding}. shows the encoding of a tree with this algorithm.
+
+While the case for the instance oracle has remained outside the focus of our study, we show the differences in its encoding algorithm: step \ref{tree}. is modified such that the root is the starting node of the robot, and steps \ref{prev}-\ref{zeros}. may be omitted.
 
 \begin{figure}
   \textbf{Input:} Initial graph $G$
@@ -64,13 +72,13 @@ In a shorter advice, an oracle may only be able to provide limited information, 
   \vspace{1em}
 
   \begin{compactenum}
-  \item Create a spanning tree $T$ in $G$, rooted at some arbitrary node.
+  \item \label{tree}Create a spanning tree $T$ in $G$, rooted at some arbitrary node.
   \item \label{prev}Encode $T$ in order of a DFS traversal such that
     \begin{compactenum}
     \item bit 1 means to ,,go down in the tree'' to a previously unexplored node,
     \item bit 0 means to ,,go up the tree''.
     \end{compactenum}
-  \item Write as many 0s as is needed to ,,go back'' to the root of $T$. Write another 0, signaling the end of the bits describing the structure of $T$.
+  \item \label{zeros}Write as many 0s as is needed to ,,go back'' to the root of $T$. Write another 0, signaling the end of the bits describing the structure of $T$.
   \item Encode the port numbers as they are encountered following the euler route described in point \ref{prev}.
   \item Convert decimal port numbers to binary, pad them with 0s until the width reaches $\lceil\log_2(n)\rceil$.
   \end{compactenum}
@@ -78,6 +86,7 @@ In a shorter advice, an oracle may only be able to provide limited information, 
   \label{fig:encoding-alg}
 \end{figure}
 
+After the robot has received the advice from the map oracle, it parses and traverses the graph as described on Figure \ref{fig:map-robot-exploration}. Note that step \ref{for-loop}. terminates upon finding the first $u$ node for which $F(u)$ can be traversed successfully. The case for an instance oracle is much more simple: the robot must simply follow the port numbers as described by the advice.
 
 \begin{figure}
   \textbf{Input:} Advice constructed on Figure \ref{fig:encoding-alg}, initial graph $G$, and starting position $s$ (The robot itself is oblivious to the graph and its starting position in it.)
@@ -87,7 +96,7 @@ In a shorter advice, an oracle may only be able to provide limited information, 
 
   \begin{compactenum}
   \item Create the spanning tree $T$ with the appropriate port numbering.
-  \item for each $u$ node in $T$,    
+  \item \label{for-loop}For each $u$ node in $T$,    
     \begin{compactenum}
       \item Identify an euler route in $T$ starting in $u$ and encode its port numbers in $E(u)$
       \item Let $E'(u)$ be the reverse of $E(u)$, and $F(u)$ the concatenation of $E(u)$ and $E'(u)$
@@ -95,7 +104,7 @@ In a shorter advice, an oracle may only be able to provide limited information, 
     \end{compactenum}
   \end{compactenum}
   \caption{Robot traversing the graph with an advice constructed on Figure \ref{fig:encoding-alg}.}
-  \label{fig:ulgt-algorithm}
+  \label{fig:map-robot-exploration}
 \end{figure}
 
 \begin{figure}
@@ -105,9 +114,18 @@ In a shorter advice, an oracle may only be able to provide limited information, 
   \label{fig:encoding}
 \end{figure}
 
-\section{Measurement methodology}
-\label{sec:method}
+\section{Focus of the study: success probabilities}
+\label{sec:focus}
 
+Our initial interpretation of the algorithm shown on Figure \ref{fig:map-robot-exploration}. lead to an incorrect conviction that the robot would only traverse any route $F(u)$, if for the robot's starting position $s, s=u$. This was unfortunately compounded by a minor oversight in our prototype implementation, where the robot traversed the spanning tree it created from the advice, instead of the original graph.
+
+For a brief moment, follow our initial, faulty line of thinking. Suppose that the robot is trying to traverse $\forall u\in V(G): F(u)$ routes, until $u = s$. Say that the robot is attempting to traverse route $F(u)$ for some $u \neq s$, and after some steps, it is in node $k$. According to $F(u)$, the next port to be taken may be $p$, even though its possible that in the original graph node $k$ has such a port, but not the spanning tree that the robot has.
+
+The above exercise has two major takeaways: the robot may be able to traverse a route in its entirety even if $u \neq s$. Also, generally speaking, what the robot may think about its position in the graph may be in no relation to its actual position even in the posession of a spanning tree.
+
+Upon fixing our prototype, we found that for the graph shown on Figure \ref{fig:port-numbered-graph}, the robot could traverse 8 routes out of 24 in its entirety. This ratio suggests that the probability of any one route being successfully reversed is not only different from our initially believed $1/n$, but so far from it, it would seem unlikely for this to be a coincidence, or down to some special traits in our graph.
+
+Inspired by this unexpected discovery, we set on to find what metrics may correlate the strongest with this likelihood. In addition, we measured some other traits of our implementatation such as runtime.
 
 \section{Results}
 \label{sec:results}
