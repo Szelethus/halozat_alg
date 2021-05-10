@@ -130,51 +130,70 @@ Inspired by this unexpected discovery, we set on to find what metrics may correl
 \section{Results}
 \label{sec:results}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=5cm]{figures/regular_graph.png}
+  \caption{For this $(3,2)$-regular graph, 112 is a universal traversal sequence.}
+  \label{fig:regular-graph}
+\end{figure}
+
+We show our measurements on Figure \ref{fig:random-results}. and Figure \ref{fig:regular-results}. We will discuss them from left to right, top to bottom, starting with the former. Figure \ref{fig:random-results}. displays measurements on randomly generated graph, whereas Figure \ref{fig:regular-results}. shows measurements on randomly generated \textit{regular} graphs.
+
+The first image shows increasing edge density against the probability of any $F(u)$ routes being fully explored. The authors conjectured that sparse graph (fewer edges relative to the node count) are likely harder to explore in this context; while the figure doesn't prove this, it does display a strong correlation in between graph density and the success rates of the routes.
+
+The second image shows graph density against exploration length (which is essentially the length of $F(u)$). We see a strong correlation, which is unexpected; consider the fact that although the edge count of the graph increases, the spanning tree of a sparse graph has just as many edges as the spanning tree of a dense graph, $n-1$. If the subgraph the robot receives has a constant edge count of $n-1$, and we know that the probabilities increase as the original graph gets denser, how come exploration time gets longer?
+
+The answer is found on the third image: it so happens that networkx~\cite{hagbergnetworkx}, our choice for the underlaying graph library, tends to create spanning trees with more leaves for denser graph. This explains why the exploration legth increases; the more reverse edges the robot has to take, as opposed to a spanning tree taking the form of a linegraph, the more nodes it has to visit.
+
+While this makes sense, image four, displaying the relation of increasing spanning tree leaf counts and the exploration legth, becomes more puzzling. Surely, more reverse edges must result in a longer exploration length, so how comes the correlance is not stronger? Why are there dips in the graph? The answer lies in the somewhat misleading image; on the x axis, we display the \textit{leaf count}, not the number of reverse edges. Also, the exploration length takes into account routes that failed. The authors conjecture that an adjustment to the image would display a graph similar, bit mirrored to what is diplayed on image 3.
+
+Image five shows the cost of failure -- how many node visits did the robot need to track back to its starting position after realizing the route is inexplorable? The results, again, may seem surprising, as the amount of backtrack steps are roughly half of how many steps were taken before the error was realized. How come those are not equal? This is answered by how the robot is able to keep track of the ports taken so far, and also the ports it needs to take to track back to its starting position. This trait implies that the robot is able to learn both port numbers on any given edge, which although is insufficient on its own to make it realize where is it in the graph, it does allow for recognizing when the robot descends to a node, and ascends right back up. We exploited this to reduce the number of backtrack edges needed to take to the starting point.
+
+On image six, we see the runtime of our prototype on the exploration of a given route, successful or not. We see a strong correlation, unsurprising after learning about image two.
+
+This leaves us with the images shown on Figure \ref{fig:regular-results}. Unfortunately, the authors were unable to gather enough statistics to support any conclusions. Nonetheless, we will discuss our main conjecure. Supplying the robot with a weaker advice, only consisting of the size of the graph, requires significant work on the robot's end; one such idea is discussed in \cite{aleliunas1979random}. While the details are outside the scope of our summary, it suffices to say that a large component of the algorithm of the construction of a universal traversal sequence~\cite{aleliunas1979random}. Universal traversal sequences are port sequences that explore an $n$ node, $d$-degree regular graph regardless of the port numbering, as shown on Figure \ref{fig:regular-graph}. We think there might be correlation in between the success chance and graph that are ,,closer'' to being regular.
+
 % Turn off page numbering.
 \pagenumbering{gobble}
 \newgeometry{showframe,paper=a4paper,top=0.0in,bottom=0.0in,right=0.5in,left=0.5in}
 
-\begin{landscape}
 \begin{figure}
   \centering
   \includegraphics[width=8cm]{figures/random_uj/edge_den_succ.png}
   \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
-  \hspace{1cm}
   \includegraphics[width=8cm]{figures/random_uj/edge_expl.png}
   \vspace{1cm}
 
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
-  \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
-  \hspace{1cm}
   \includegraphics[width=8cm]{figures/random_uj/edge_tree.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/leaf_expl.png}
+  \vspace{1cm}
 
-  \caption{Measurements on increasing edge density. All graphs had 1000 nodes, and there were 10 additional and 10 excess edges.}
-  \label{fig:edge-density}
+  \includegraphics[width=8cm]{figures/random_uj/bar_plot_3.png}
+  \hspace{1cm}
+  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+
+  \caption{Measurements on random graphs. All graphs have a fixed node count.}
+  \label{fig:random-results}
 \end{figure}
-\end{landscape}
 
-\begin{landscape}
 \begin{figure}
   \centering
-  \includegraphics[width=8cm]{figures/random_uj/edge_den_succ.png}
+  \includegraphics[width=8cm]{figures/reg_uj/edge_den_succ.png}
   \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
-  \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_expl.png}
+  \includegraphics[width=8cm]{figures/reg_uj/edge_expl.png}
   \vspace{1cm}
 
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
+  \includegraphics[width=8cm]{figures/reg_uj/edge_tree.png}
   \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_time.png}
-  \hspace{1cm}
-  \includegraphics[width=8cm]{figures/random_uj/edge_tree.png}
+  \includegraphics[width=8cm]{figures/reg_uj/leaf_expl.png}
+  \vspace{1cm}
 
-  \caption{Measurements on increasing edge density. All graphs had 1000 nodes, and there were 10 additional and 10 excess edges.}
-  \label{fig:edge-density}
+  \includegraphics[width=8cm]{figures/reg_uj/edge_time.png}
+
+  \caption{Measurements on regular graphs. All graphs have a fixed node count.}
+  \label{fig:regular-results}
 \end{figure}
-\end{landscape}
 
 % Turn on page numbering.
 \pagenumbering{arabic}
@@ -183,10 +202,19 @@ Inspired by this unexpected discovery, we set on to find what metrics may correl
 \section{Future work}
 \label{sec:future-work}
 
+It remains to show or disprove that the ,,more regular'' a graph gets, the higher the success chance is for a route exploration. There are a number of challenges to overcome on that front; coming up with a sensible regular graph generator, and variants of that generator.
 
+While we've shown a strong correlation in between edge density and success rates, we are curious whether the number of reverse edges in the spanning tree correlate even stronger. Indeed, what if some other metrics are those that really influence success rates? Further research could shed some more light on this.
+
+We took a rather literal interpretation of the algorithm discussed in \cite{gorain2018deterministic}. Its likely that the robot could be smarter, for instance, knowing the routes that already failed, it could guess its location of its graph, or rule a number of nodes out. The oracle might be able to recognize special traits of a graph, like regularity. In that case, node count and degree would already be a sufficient advice; the robot could explore the corresponging universal traversal sequence.
 
 \section{Conclusion}
 
+We researched a novel approach to the graph traversal problem. In a connected, undirected, port numbered graph, we discussed how a robot could visit every node at least once with an outsides entity, called an oracle, supplying an advice. We focus on a case where said oracle -- called a map oracle -- is unaware of the starting position of the robot. The advice such an oracle can produce forces the robot to try, and occasionally failed to explore a number of routes.
+
+We learned that the successful exploration of a route the robot constructs doesn't depend on the route's starting point having to be equal to the starting position of the robot. In fact, we learned that a great number of routes can lead to the full exploration of the graph. This motivated us to research what traits of the input graph or the advice might influence the rate of success on these explorations.
+
+We showed that there is strong correlation in between the edge density of a graph and the route of success on the route epxloration. We further conjectured that regular graph, or graph with regular components migth also correlate with success rates.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,references}
